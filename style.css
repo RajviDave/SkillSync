@@ -1,3 +1,14 @@
 body{
     background-color:#18181B;
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;//horizonatlly
+    align-items:center;//vertically
+}
+
+.center{
+    width:400px;
+    height:100px;
+
 }
