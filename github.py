@@ -1,12 +1,18 @@
 import requests
-import nltk
 
-response=requests.get("https://github.com/ukhirani")
+owner=input("Enter Username")
+repo=input("inpur repo name")
+token=" "
+
+url=f"https://api.github.com/repos/{owner}/{repo}/languages"
+
+headers={
+    "Accept": "application/vnd.github+json",
+    # "Authorization": f"Bearer {token}",
+    "X-GitHub-Api-Version": "2022-11-28"
+}
+
+response = requests.get(url,headers=headers)
+
 print(response.status_code)
-content=(response.content)
-
-file_path = "new_file.txt"
-with open(file_path, 'w') as file:
-    file.write(content)
-
-print({file_path})
+print(response.json())
