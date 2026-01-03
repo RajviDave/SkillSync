@@ -1,17 +1,25 @@
-import requests
+import http.client
+import json
 import os
-from dotenv import load_dotenv
 
-token=os.getenv("GITHUB_TOKEN")
+username = input("Enter username")
 
-url="https://api.github.com/repositories"
+conn = http.client.HTTPSConnection("api.github.com")
 
-headers={
-   "Accept": "application/vnd.github+json",
-    "Authorization": f"Bearer {token}",
-    "X-GitHub-Api-Version": "2022-11-28"
+headers = {
+    "Accept": "application/vnd.github+json",
+    "User-Agent": "Python-App",
+    "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}"
 }
 
-response = requests.get(url,header=headers)
+conn.request("GET", f"/users/{username}/repos", headers=headers)
 
-print(response.status_code)
+res = conn.getresponse()
+data = res.read()
+
+repos = json.loads(data.decode("utf-8"))
+
+# extract repo names
+repo_names = [repo["name"] for repo in repos]
+
+print(repo_names)
