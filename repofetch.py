@@ -35,6 +35,8 @@ for repo in repo_names:
         "X-GitHub-Api-Version": "2022-11-28"
     }
 
-    response = requests.get(url,headers=headers)
-
-    print(response.json())
+   
+    response = requests.get(url,headers=headers) 
+    dictionary=response.json()
+    
+    print(type(dictionary))
