@@ -17,6 +17,7 @@ conn.request("GET", f"/users/{owner}/repos", headers=headers)
 
 res = conn.getresponse()
 data = res.read()
+languages={}
 
 repos = json.loads(data.decode("utf-8"))
 
@@ -34,9 +35,15 @@ for repo in repo_names:
         "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
         "X-GitHub-Api-Version": "2022-11-28"
     }
-
    
     response = requests.get(url,headers=headers) 
     dictionary=response.json()
     
-    print(type(dictionary))
+    for dic in dictionary :
+
+        if dic in languages:
+            print(" ")
+        else:
+            languages[dic]=dictionary[dic]
+
+print(languages)          
