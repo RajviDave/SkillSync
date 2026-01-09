@@ -47,6 +47,8 @@ for repo in repo_names:
             languages[key]=value
 
 print(languages)       
-languages=list(languages)  
-print(type(languages)) 
+  
+all_value=sum(languages.values())
+print(all_value)
 
+percentage={}
