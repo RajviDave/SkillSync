@@ -57,4 +57,9 @@ for key,value in languages.items():
     single_value=(value / all_value) * 100
     final[key]=final.get(key,0)+single_value
 
-print(final)
+# print(final)
+
+final_sorted=dict(sorted(final.items(), key=lambda item:item[1], reverse=True))
+
+
+print(final_sorted)
