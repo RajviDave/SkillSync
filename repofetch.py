@@ -51,4 +51,10 @@ print(languages)
 all_value=sum(languages.values())
 print(all_value)
 
-percentage={}
+final={}
+
+for key,value in languages.items():
+    single_value=(value / all_value) * 100
+    final[key]=final.get(key,0)+single_value
+
+print(final)
