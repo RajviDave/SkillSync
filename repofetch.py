@@ -46,5 +46,7 @@ for repo in repo_names:
         else:
             languages[key]=value
 
-print(languages)          
+print(languages)       
+languages=list(languages)  
+print(type(languages)) 
 
