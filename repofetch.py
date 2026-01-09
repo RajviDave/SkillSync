@@ -39,11 +39,12 @@ for repo in repo_names:
     response = requests.get(url,headers=headers) 
     dictionary=response.json()
     
-    for dic in dictionary :
+    for key,value in dictionary.items():
 
-        if dic in languages:
-            print(" ")
+        if key in languages:
+            languages[key]=languages[key]+value
         else:
-            languages[dic]=dictionary[dic]
+            languages[key]=value
 
 print(languages)          
+
