@@ -1,0 +1,14 @@
+body{
+    background-color:#18181B;
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;//horizonatlly
+    align-items:center;//vertically
+}
+
+.center{
+    widht:300px;
+    height:200px;
+    margin:300px;
+}

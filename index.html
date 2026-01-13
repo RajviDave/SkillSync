@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Recruitment Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">Recruit<span class="highlight">AI</span></div>
+        <div class="user-profile">Mentor Dashboard</div>
+    </nav>
+
+    <div class="container">
+        
+        <section class="card jd-section">
+            <div class="card-header">
+                <h2>1. Global Job Description</h2>
+                <span class="badge">Required</span>
+            </div>
+            <p class="subtitle">Paste the requirements here. This will be used to benchmark all candidates.</p>
+            <textarea id="jdInput" placeholder="e.g., We are looking for a Senior React Developer with Python experience..."></textarea>
+        </section>
+
+        <section class="card candidate-section">
+            <div class="card-header">
+                <h2>2. Evaluate Candidate</h2>
+                <span class="status-dot"></span>
+            </div>
+            
+            <form id="evaluationForm">
+                <div class="form-group">
+                    <label>Resume (PDF)</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="resumeUpload" accept=".pdf" hidden>
+                        <label for="resumeUpload" class="custom-file-btn">
+                            <span id="fileName">📂 Choose PDF File</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>GitHub Profile URL</label>
+                    <input type="url" id="githubUrl" placeholder="https://github.com/username">
+                </div>
+
+                <div class="form-group">
+                    <label>Mentor Comments</label>
+                    <textarea id="mentorComments" rows="3" placeholder="e.g., Candidate has strong communication but lacks backend depth..."></textarea>
+                </div>
+
+                <button type="submit" class="cta-button">Analyze Candidate 🚀</button>
+            </form>
+        </section>
+
+        
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
