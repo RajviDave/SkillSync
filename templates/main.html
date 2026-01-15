@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillSync - Evaluation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        h1 {
+            text-align: center;
+            color: #818cf8;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        textarea, input[type="text"], input[type="url"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: #818cf8;
+        }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        .file-upload input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .file-upload-label {
+            display: block;
+            padding: 12px;
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .file-upload-label:hover {
+            border-color: #818cf8;
+            background: #f8f9ff;
+        }
+        #fileName {
+            margin-top: 10px;
+            padding: 8px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+        }
+        .cta-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #818cf8, #f58092);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .cta-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+        .cta-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: #f58092;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .user-info {
+            text-align: right;
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body style="background: linear-gradient(135deg, #818cf8, #f58092); min-height: 100vh; padding: 20px;">
+    <button class="logout-btn" onclick="logout()">Logout</button>
+    
+    <div class="container">
+        <h1>Skill<span style="color: #f58092;">Sync</span> Evaluation</h1>
+        
+        <div class="user-info" id="userInfo">Loading...</div>
+
+        <form id="evaluationForm">
+            <div class="form-group">
+                <label for="jdInput">Job Description *</label>
+                <textarea id="jdInput" placeholder="Paste the job description here..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="resumeUpload">Upload Resume (PDF) *</label>
+                <div class="file-upload">
+                    <input type="file" id="resumeUpload" accept=".pdf" required>
+                    <label for="resumeUpload" class="file-upload-label">
+                        📄 Click to upload or drag and drop
+                    </label>
+                </div>
+                <div id="fileName"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="githubUrl">GitHub Username or Profile URL</label>
+                <input type="text" id="githubUrl" placeholder="e.g., username or https://github.com/username">
+                <small style="color: #666; font-size: 12px;">We'll analyze your repositories and generate a quiz</small>
+            </div>
+
+            <div class="form-group">
+                <label for="mentorComments">Mentor Comments</label>
+                <textarea id="mentorComments" placeholder="Enter mentor feedback or comments about the candidate..."></textarea>
+            </div>
+
+            <button type="submit" class="cta-button">Start Evaluation</button>
+        </form>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        // Check authentication on page load
+        fetch('backend/check_session.php')
+            .then(res => res.json())
+            .then(data => {
+                if (data.authenticated) {
+                    document.getElementById('userInfo').textContent = `Welcome, ${data.user.name || data.user.email}`;
+                } else {
+                    window.location.href = '/auth';
+                }
+            })
+            .catch(err => {
+                console.error('Auth check failed:', err);
+                window.location.href = '/auth';
+            });
+
+        function logout() {
+            fetch('backend/logout.php')
+                .then(() => {
+                    window.location.href = '/';
+                })
+                .catch(err => {
+                    console.error('Logout failed:', err);
+                    window.location.href = '/';
+                });
+        }
+    </script>
+</body>
+</html>

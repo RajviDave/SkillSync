@@ -4,7 +4,7 @@ import os
 
 
 owner=input("Enter Username")
-repo=input("inpur repo name")
+repo=input("Input repo name")
 token=os.getenv("GITHUB_TOKEN")
 
 url=f"https://api.github.com/repos/{owner}/{repo}/languages"

@@ -76,14 +76,25 @@ class ResumeAnalyzer:
 
     def extract_text_from_pdf(self, pdf_path):
         # NOTE: When using with Flask, 'pdf_path' might be a FileStorage object
-        # For now, we keep logic for file path string
+        # Handle both file paths (strings) and FileStorage objects from Flask
         text = ""
         try:
-            with pdfplumber.open(pdf_path) as pdf:
-                if not pdf.pages: return "ERROR_EMPTY"
-                for page in pdf.pages:
-                    extracted = page.extract_text()
-                    if extracted: text += extracted + "\n"
+            # Check if it's a FileStorage object (has .stream attribute) or a file path
+            if hasattr(pdf_path, 'stream'):
+                # It's a Flask FileStorage object - reset stream position
+                pdf_path.stream.seek(0)
+                with pdfplumber.open(pdf_path.stream) as pdf:
+                    if not pdf.pages: return "ERROR_EMPTY"
+                    for page in pdf.pages:
+                        extracted = page.extract_text()
+                        if extracted: text += extracted + "\n"
+            else:
+                # It's a file path string
+                with pdfplumber.open(pdf_path) as pdf:
+                    if not pdf.pages: return "ERROR_EMPTY"
+                    for page in pdf.pages:
+                        extracted = page.extract_text()
+                        if extracted: text += extracted + "\n"
         except Exception as e:
             return f"ERROR_PARSING: {str(e)}"
         return text

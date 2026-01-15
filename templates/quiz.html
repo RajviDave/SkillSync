@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillSync - Quiz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        h1 {
+            text-align: center;
+            color: #818cf8;
+            margin-bottom: 30px;
+        }
+        .question-card {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: #fafafa;
+        }
+        .question-number {
+            color: #818cf8;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .question-text {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .option {
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        .option:hover {
+            border-color: #818cf8;
+            background: #f8f9ff;
+        }
+        .option.selected {
+            border-color: #818cf8;
+            background: #e8ebff;
+        }
+        .option input[type="radio"] {
+            margin-right: 10px;
+        }
+        .category-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .category-badge.theory {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .category-badge.coding {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #818cf8, #f58092);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .progress-bar {
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #818cf8, #f58092);
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body style="background: linear-gradient(135deg, #818cf8, #f58092); min-height: 100vh; padding: 20px;">
+    <div class="container">
+        <h1>Technical Quiz</h1>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+        </div>
+
+        <form id="quizForm" data-total-questions="{% if quiz %}{{ quiz|length }}{% else %}0{% endif %}">
+            {% for question in quiz %}
+            <div class="question-card" data-question-index="{{ loop.index0 }}">
+                <div class="question-number">Question {{ loop.index }} of {{ quiz|length }}</div>
+                <span class="category-badge {{ question.category|lower }}">{{ question.category }}</span>
+                <div class="question-text">{{ question.question }}</div>
+                <div class="options">
+                    {% set question_index = loop.index0 %}
+                    {% set option_letters = ['A', 'B', 'C', 'D'] %}
+                    {% for option in question.options %}
+                    <label class="option">
+                        <input type="radio" name="q{{ question_index }}" value="{{ loop.index0 }}" required>
+                        <strong>{{ option_letters[loop.index0] }}.</strong> {{ option }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="submit-btn" id="submitBtn">Submit Quiz</button>
+        </form>
+    </div>
+
+    <script>
+        const quizForm = document.getElementById('quizForm');
+        const totalQuestions = parseInt(quizForm.getAttribute('data-total-questions')) || 0;
+        let answeredCount = 0;
+
+        function selectOption(element) {
+            // Remove selected class from siblings
+            const card = element.closest('.question-card');
+            card.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            // Add selected class to clicked option
+            element.classList.add('selected');
+            
+            // Update progress
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const form = document.getElementById('quizForm');
+            const formData = new FormData(form);
+            answeredCount = 0;
+            for (let i = 0; i < totalQuestions; i++) {
+                if (formData.has(`q${i}`)) {
+                    answeredCount++;
+                }
+            }
+            const progress = (answeredCount / totalQuestions) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // Handle option selection
+        document.querySelectorAll('.option').forEach(option => {
+            option.addEventListener('click', function(e) {
+                // Don't trigger if clicking directly on the radio button
+                if (e.target.type !== 'radio') {
+                    const radio = this.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                        selectOption(this);
+                    }
+                }
+            });
+        });
+
+        // Update progress on any radio change
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const option = this.closest('.option');
+                if (option) {
+                    selectOption(option);
+                }
+                updateProgress();
+            });
+        });
+
+        // Handle form submission
+        document.getElementById('quizForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const answers = {};
+            
+            for (let i = 0; i < totalQuestions; i++) {
+                const answer = formData.get(`q${i}`);
+                if (answer !== null) {
+                    const optionIndex = parseInt(answer);
+                    answers[i] = ['A', 'B', 'C', 'D'][optionIndex];
+                }
+            }
+
+            if (Object.keys(answers).length !== totalQuestions) {
+                alert('Please answer all questions before submitting.');
+                return;
+            }
+
+            // Disable submit button
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            // Submit answers
+            fetch('/submit_quiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ answers: answers })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Redirect to results page
+                    window.location.href = '/results';
+                } else {
+                    alert('Error submitting quiz: ' + (data.error || 'Unknown error'));
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Quiz';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Network error. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Quiz';
+            });
+        });
+    </script>
+</body>
+</html>
