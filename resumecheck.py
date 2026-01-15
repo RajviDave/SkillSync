@@ -4,6 +4,18 @@ import sys
 from typing import List, Dict, Set
 
 # ==========================================
+# 0. GLOBAL STORAGE (The Change You Asked For)
+# ==========================================
+# This variable will hold the JD for the entire session
+GLOBAL_JD = ""
+
+def set_global_jd(text: str):
+    """Call this function from your Web/Flask app to update the JD once."""
+    global GLOBAL_JD
+    GLOBAL_JD = text
+    print(f"✅ Global Job Description Updated! (Length: {len(text)} chars)")
+
+# ==========================================
 # 1. THE BRAIN: Skill Ontology (Expanded)
 # ==========================================
 class SkillOntology:
@@ -42,7 +54,6 @@ class SkillOntology:
         }
 
     def normalize_skill(self, text_token: str) -> str:
-        """Standardizes skills (e.g. 'react.js' -> 'react')"""
         text_token = text_token.lower().strip()
         for skill_id, data in self.knowledge_base.items():
             if text_token == skill_id or text_token in data['variations']:
@@ -50,7 +61,6 @@ class SkillOntology:
         return None
 
     def get_inferred_skills(self, found_skills: Set[str]) -> Set[str]:
-        """If user has 'React', add 'JavaScript' automatically."""
         inferred = set()
         for skill in found_skills:
             if skill in self.knowledge_base:
@@ -64,7 +74,9 @@ class ResumeAnalyzer:
     def __init__(self):
         self.ontology = SkillOntology()
 
-    def extract_text_from_pdf(self, pdf_path: str) -> str:
+    def extract_text_from_pdf(self, pdf_path):
+        # NOTE: When using with Flask, 'pdf_path' might be a FileStorage object
+        # For now, we keep logic for file path string
         text = ""
         try:
             with pdfplumber.open(pdf_path) as pdf:
@@ -72,46 +84,46 @@ class ResumeAnalyzer:
                 for page in pdf.pages:
                     extracted = page.extract_text()
                     if extracted: text += extracted + "\n"
-        except FileNotFoundError:
-            return "ERROR_NOT_FOUND"
         except Exception as e:
             return f"ERROR_PARSING: {str(e)}"
         return text
 
     def extract_skills(self, text: str) -> Set[str]:
         found_skills = set()
-        # Clean text: lowercase and remove punctuation
         clean_text = re.sub(r'[^\w\s]', ' ', text.lower())
         tokens = clean_text.split()
 
-        # 1. Check every word against dictionary
         for token in tokens:
             match = self.ontology.normalize_skill(token)
             if match: found_skills.add(match)
         
-        # 2. Check specific multi-word phrases (Manual addition for safety)
         if "machine learning" in clean_text: found_skills.add("machine_learning")
         if "react native" in clean_text: found_skills.add("react_native")
         if "deep learning" in clean_text: found_skills.add("deep_learning")
 
-        # 3. Add Inferred Skills (The "Brain" part)
         inferred = self.ontology.get_inferred_skills(found_skills)
         found_skills.update(inferred)
         
         return found_skills
 
-    def analyze(self, pdf_path: str, jd_text: str):
-        # 1. Read PDF
+    # UPDATED: jd_text is now optional (defaults to None)
+    def analyze(self, pdf_path, jd_text=None):
+        # 1. Handle Global JD Logic
+        if jd_text is None:
+            # If no JD passed, use the GLOBAL one
+            if not GLOBAL_JD:
+                print("❌ Error: Global Job Description is empty. Please set it first.")
+                return
+            jd_text = GLOBAL_JD
+
+        # 2. Read PDF
         resume_text = self.extract_text_from_pdf(pdf_path)
         
-        if resume_text == "ERROR_NOT_FOUND":
-            print(f"❌ Error: File '{pdf_path}' not found.")
-            return
-        if resume_text.startswith("ERROR"):
+        if str(resume_text).startswith("ERROR"):
             print(f"❌ Error reading PDF: {resume_text}")
             return
 
-        # 2. Extract Skills
+        # 3. Extract Skills
         r_skills = self.extract_skills(resume_text)
         jd_skills = self.extract_skills(jd_text)
 
@@ -119,36 +131,30 @@ class ResumeAnalyzer:
             print("⚠️  Warning: The Job Description didn't contain any technical skills we recognize.")
             return
 
-        # 3. Match
+        # 4. Match
         matches = r_skills.intersection(jd_skills)
         missing = jd_skills - r_skills
         
-        # 4. Score (Percentage Match)
+        # 5. Score
         score = (len(matches) / len(jd_skills)) * 100
 
-        # 5. Output Results
-        print("\n" + "="*40)
-        print(f"📊 ANALYSIS RESULT FOR: {pdf_path}")
-        print("="*40)
-        print(f"✅  MATCH SCORE: {round(score, 1)}%")
-        print("-" * 20)
-        print(f"Found in Resume: {sorted(list(r_skills))}")
-        print(f"Required by JD:  {sorted(list(jd_skills))}")
-        print("-" * 20)
+        # Output
+        print(f"\n📊 ANALYSIS RESULT FOR: {pdf_path}")
+        print(f"✅ MATCH SCORE: {round(score, 1)}%")
         print(f"👍 MATCHED SKILLS: {sorted(list(matches))}")
         print(f"👎 MISSING SKILLS: {sorted(list(missing))}")
-        print("="*40)
+        
+        return score # Return score so web app can use it
 
 # ==========================================
-# 3. MAIN EXECUTION
+# 3. MAIN EXECUTION (Updated for Testing)
 # ==========================================
 def get_multiline_input():
     print("Paste the Job Description below (Type 'END' on a new line to finish):")
     lines = []
     while True:
         line = input()
-        if line.strip() == "END":
-            break
+        if line.strip() == "END": break
         lines.append(line)
     return "\n".join(lines)
 
@@ -157,11 +163,14 @@ if __name__ == "__main__":
     
     print("\n--- RESUME SKILL ANALYZER ---")
     
-    # 1. Get Resume PDF Path
+    # 1. Ask User: Do you want to set a new Global JD?
+    choice = input("Do you want to update the Global Job Description? (y/n): ").lower()
+    if choice == 'y':
+        new_jd = get_multiline_input()
+        set_global_jd(new_jd)
+    
+    # 2. Get Resume PDF Path
     pdf_input = input("Enter Resume PDF filename (e.g. resume.pdf): ").strip()
     
-    # 2. Get JD String
-    jd_input = get_multiline_input()
-    
-    # 3. Run
-    engine.analyze(pdf_input, jd_input)
+    # 3. Run Analysis (Notice we don't pass JD here; it uses Global)
+    engine.analyze(pdf_input)

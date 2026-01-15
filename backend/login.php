@@ -21,3 +21,10 @@ if ($user && password_verify($password, $user['password'])) {
     echo "Invalid credentials";
 }
 ?>
+
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) && !isset($_SESSION['email'])) {
+    header("Location: auth.html");
+}
+?>
