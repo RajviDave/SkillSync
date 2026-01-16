@@ -6,6 +6,25 @@
     <title>SkillSync - Quiz</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #f58092;
+            border: 2px solid #f58092;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        .logout-btn:hover {
+            background: #f58092;
+            color: white;
+        }
         .container {
             max-width: 900px;
             margin: 40px auto;
@@ -21,10 +40,14 @@
         }
         .question-card {
             margin-bottom: 30px;
-            padding: 25px;
+            padding: 30px;
             border: 2px solid #e0e0e0;
             border-radius: 12px;
             background: #fafafa;
+            transition: all 0.3s;
+        }
+        .question-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .question-number {
             color: #818cf8;
@@ -32,10 +55,11 @@
             margin-bottom: 10px;
         }
         .question-text {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 600;
             margin-bottom: 20px;
             color: #333;
+            line-height: 1.6;
         }
         .options {
             display: flex;
@@ -43,20 +67,24 @@
             gap: 12px;
         }
         .option {
-            padding: 12px 16px;
+            padding: 14px 18px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
             background: white;
+            display: flex;
+            align-items: center;
         }
         .option:hover {
             border-color: #818cf8;
             background: #f8f9ff;
+            transform: translateX(5px);
         }
         .option.selected {
             border-color: #818cf8;
             background: #e8ebff;
+            box-shadow: 0 2px 8px rgba(129, 140, 248, 0.2);
         }
         .option input[type="radio"] {
             margin-right: 10px;
@@ -111,11 +139,18 @@
     </style>
 </head>
 <body style="background: linear-gradient(135deg, #818cf8, #f58092); min-height: 100vh; padding: 20px;">
+    <button class="logout-btn" onclick="window.location.href='/main'">← Back</button>
     <div class="container">
-        <h1>Technical Quiz</h1>
+        <h1>📝 Technical Quiz</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            Answer all questions based on your GitHub profile analysis
+        </p>
         
         <div class="progress-bar">
             <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+        </div>
+        <div style="text-align: center; margin-bottom: 20px; color: #666; font-size: 14px;">
+            <span id="progressText">0 of {% if quiz %}{{ quiz|length }}{% else %}0{% endif %} questions answered</span>
         </div>
 
         <form id="quizForm" data-total-questions="{% if quiz %}{{ quiz|length }}{% else %}0{% endif %}">
@@ -142,9 +177,28 @@
     </div>
 
     <script>
+        // Check authentication on page load
+        fetch('backend/check_session.php')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.authenticated) {
+                    window.location.href = '/auth';
+                }
+            })
+            .catch(err => {
+                console.error('Auth check failed:', err);
+                window.location.href = '/auth';
+            });
+
         const quizForm = document.getElementById('quizForm');
         const totalQuestions = parseInt(quizForm.getAttribute('data-total-questions')) || 0;
         let answeredCount = 0;
+
+        // Check if quiz has questions
+        if (totalQuestions === 0) {
+            alert('No quiz questions available. Redirecting to main page...');
+            window.location.href = '/main';
+        }
 
         function selectOption(element) {
             // Remove selected class from siblings
@@ -168,6 +222,7 @@
             }
             const progress = (answeredCount / totalQuestions) * 100;
             document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${answeredCount} of ${totalQuestions} questions answered`;
         }
 
         // Handle option selection
@@ -218,7 +273,7 @@
             // Disable submit button
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
+            submitBtn.textContent = '⏳ Submitting...';
 
             // Submit answers
             fetch('/submit_quiz', {
@@ -228,20 +283,26 @@
                 },
                 body: JSON.stringify({ answers: answers })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.status === 'success') {
+                    submitBtn.textContent = '✅ Redirecting to Results...';
                     // Redirect to results page
-                    window.location.href = '/results';
+                    setTimeout(() => {
+                        window.location.href = '/results';
+                    }, 500);
                 } else {
-                    alert('Error submitting quiz: ' + (data.error || 'Unknown error'));
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Submit Quiz';
+                    throw new Error(data.error || 'Unknown error');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Network error. Please try again.');
+                alert('Error submitting quiz: ' + error.message);
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Submit Quiz';
             });

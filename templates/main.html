@@ -6,42 +6,61 @@
     <title>SkillSync - Evaluation</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
+        body {
+            background: linear-gradient(135deg, #818cf8, #f58092);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 40px auto;
-            padding: 30px;
+            padding: 40px;
             background: white;
-            border-radius: 14px;
+            border-radius: 16px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.15);
         }
         h1 {
             text-align: center;
             color: #818cf8;
+            margin-bottom: 10px;
+            font-size: 36px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
             margin-bottom: 30px;
+            font-size: 14px;
         }
         .form-group {
             margin-bottom: 25px;
         }
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             color: #333;
             font-weight: 600;
+            font-size: 15px;
+        }
+        label .required {
+            color: #f58092;
         }
         textarea, input[type="text"], input[type="url"] {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             border: 2px solid #e0e0e0;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 14px;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
+            font-family: inherit;
         }
         textarea:focus, input:focus {
             outline: none;
             border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.1);
         }
         textarea {
-            min-height: 120px;
+            min-height: 140px;
             resize: vertical;
         }
         .file-upload {
@@ -55,105 +74,168 @@
             width: 100%;
             height: 100%;
             cursor: pointer;
+            z-index: 2;
         }
         .file-upload-label {
             display: block;
-            padding: 12px;
+            padding: 20px;
             border: 2px dashed #e0e0e0;
-            border-radius: 8px;
+            border-radius: 10px;
             text-align: center;
             color: #666;
             cursor: pointer;
             transition: all 0.3s;
+            background: #fafafa;
         }
         .file-upload-label:hover {
             border-color: #818cf8;
             background: #f8f9ff;
         }
+        .file-upload-label.has-file {
+            border-color: #818cf8;
+            background: #e8ebff;
+            color: #818cf8;
+        }
         #fileName {
-            margin-top: 10px;
-            padding: 8px;
-            background: #f5f5f5;
-            border-radius: 6px;
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: #f0f4ff;
+            border-radius: 8px;
             font-size: 13px;
+            color: #818cf8;
+            font-weight: 500;
+            display: none;
+        }
+        #fileName.show {
+            display: block;
+        }
+        .help-text {
             color: #666;
+            font-size: 12px;
+            margin-top: 6px;
+            font-style: italic;
         }
         .cta-button {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             background: linear-gradient(135deg, #818cf8, #f58092);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(129, 140, 248, 0.3);
         }
         .cta-button:hover:not(:disabled) {
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(129, 140, 248, 0.4);
         }
         .cta-button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
         }
         .logout-btn {
-            position: absolute;
+            position: fixed;
             top: 20px;
             right: 20px;
-            padding: 8px 16px;
-            background: #f58092;
-            color: white;
-            border: none;
-            border-radius: 6px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #f58092;
+            border: 2px solid #f58092;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        .logout-btn:hover {
+            background: #f58092;
+            color: white;
         }
         .user-info {
-            text-align: right;
-            margin-bottom: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 12px;
+            background: #f8f9ff;
+            border-radius: 8px;
             color: #666;
             font-size: 14px;
         }
+        .user-info strong {
+            color: #818cf8;
+        }
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #818cf8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .info-box p {
+            margin: 0;
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .info-box strong {
+            color: #818cf8;
+        }
     </style>
 </head>
-<body style="background: linear-gradient(135deg, #818cf8, #f58092); min-height: 100vh; padding: 20px;">
+<body>
     <button class="logout-btn" onclick="logout()">Logout</button>
     
     <div class="container">
         <h1>Skill<span style="color: #f58092;">Sync</span> Evaluation</h1>
+        <p class="subtitle">Complete your skill assessment by providing the following information</p>
         
-        <div class="user-info" id="userInfo">Loading...</div>
+        <div class="user-info" id="userInfo">
+            <strong>Loading user information...</strong>
+        </div>
+
+        <div class="info-box">
+            <p><strong>📋 Instructions:</strong> Fill in all required fields below. After submission, you'll be taken to a quiz based on your GitHub profile, and then see your comprehensive results.</p>
+        </div>
 
         <form id="evaluationForm">
             <div class="form-group">
-                <label for="jdInput">Job Description *</label>
-                <textarea id="jdInput" placeholder="Paste the job description here..." required></textarea>
+                <label for="jdInput">Job Description <span class="required">*</span></label>
+                <textarea id="jdInput" placeholder="Paste the complete job description here. This will be used to evaluate your resume and GitHub profile..." required></textarea>
+                <div class="help-text">The job description helps us match your skills with the requirements</div>
             </div>
 
             <div class="form-group">
-                <label for="resumeUpload">Upload Resume (PDF) *</label>
+                <label for="resumeUpload">Upload Resume (PDF) <span class="required">*</span></label>
                 <div class="file-upload">
                     <input type="file" id="resumeUpload" accept=".pdf" required>
-                    <label for="resumeUpload" class="file-upload-label">
-                        📄 Click to upload or drag and drop
+                    <label for="resumeUpload" class="file-upload-label" id="fileLabel">
+                        📄 Click to upload your resume (PDF) or drag and drop here
                     </label>
                 </div>
                 <div id="fileName"></div>
+                <div class="help-text">Your resume will be analyzed for skills, experience, and alignment with the job description</div>
             </div>
 
             <div class="form-group">
                 <label for="githubUrl">GitHub Username or Profile URL</label>
-                <input type="text" id="githubUrl" placeholder="e.g., username or https://github.com/username">
-                <small style="color: #666; font-size: 12px;">We'll analyze your repositories and generate a quiz</small>
+                <input type="text" id="githubUrl" placeholder="e.g., octocat or https://github.com/octocat">
+                <div class="help-text">We'll analyze your repositories and generate a personalized technical quiz based on your code</div>
             </div>
 
             <div class="form-group">
-                <label for="mentorComments">Mentor Comments</label>
-                <textarea id="mentorComments" placeholder="Enter mentor feedback or comments about the candidate..."></textarea>
+                <label for="mentorComments">Mentor Comments / Additional Feedback</label>
+                <textarea id="mentorComments" placeholder="Enter any mentor feedback, comments, or additional information about the candidate..."></textarea>
+                <div class="help-text">Optional: Any additional feedback or comments that should be considered in the evaluation</div>
             </div>
 
-            <button type="submit" class="cta-button">Start Evaluation</button>
+            <button type="submit" class="cta-button" id="submitBtn">
+                🚀 Start Evaluation & Take Quiz
+            </button>
         </form>
     </div>
 
@@ -164,7 +246,8 @@
             .then(res => res.json())
             .then(data => {
                 if (data.authenticated) {
-                    document.getElementById('userInfo').textContent = `Welcome, ${data.user.name || data.user.email}`;
+                    const userName = data.user.name || data.user.email || 'User';
+                    document.getElementById('userInfo').innerHTML = `<strong>Welcome, ${userName}!</strong> Ready to start your evaluation?`;
                 } else {
                     window.location.href = '/auth';
                 }
@@ -175,15 +258,36 @@
             });
 
         function logout() {
-            fetch('backend/logout.php')
-                .then(() => {
-                    window.location.href = '/';
-                })
-                .catch(err => {
-                    console.error('Logout failed:', err);
-                    window.location.href = '/';
-                });
+            if (confirm('Are you sure you want to logout?')) {
+                fetch('backend/logout.php')
+                    .then(() => {
+                        window.location.href = '/';
+                    })
+                    .catch(err => {
+                        console.error('Logout failed:', err);
+                        window.location.href = '/';
+                    });
+            }
         }
+
+        // Enhanced file upload display
+        const fileInput = document.getElementById('resumeUpload');
+        const fileNameLabel = document.getElementById('fileName');
+        const fileLabel = document.getElementById('fileLabel');
+
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                const fileName = this.files[0].name;
+                fileNameLabel.textContent = "✅ " + fileName;
+                fileNameLabel.classList.add('show');
+                fileLabel.classList.add('has-file');
+                fileLabel.textContent = "📄 " + fileName;
+            } else {
+                fileNameLabel.classList.remove('show');
+                fileLabel.classList.remove('has-file');
+                fileLabel.textContent = "📄 Click to upload your resume (PDF) or drag and drop here";
+            }
+        });
     </script>
 </body>
 </html>

@@ -68,18 +68,67 @@
         }
         .quiz-results {
             margin-top: 30px;
-            padding: 25px;
+            padding: 30px;
             background: #f8f9ff;
             border-radius: 12px;
+            border: 2px solid #e8ebff;
         }
         .quiz-results h2 {
             color: #818cf8;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            font-size: 24px;
         }
         .quiz-score {
-            font-size: 24px;
-            font-weight: 600;
-            color: #333;
+            font-size: 28px;
+            font-weight: 700;
+            color: #818cf8;
+            margin: 10px 0;
+        }
+        .quiz-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .quiz-stat {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        .quiz-stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .quiz-stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #818cf8;
+        }
+        .performance-indicator {
+            margin-top: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .performance-indicator.excellent {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .performance-indicator.good {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .performance-indicator.average {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        .performance-indicator.needs-improvement {
+            background: #ffebee;
+            color: #c62828;
         }
         .actions {
             margin-top: 30px;
@@ -107,9 +156,29 @@
         .btn:hover {
             transform: translateY(-2px);
         }
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #f58092;
+            border: 2px solid #f58092;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        .logout-btn:hover {
+            background: #f58092;
+            color: white;
+        }
     </style>
 </head>
 <body style="background: linear-gradient(135deg, #818cf8, #f58092); min-height: 100vh; padding: 20px;">
+    <button class="logout-btn" onclick="window.location.href='/main'">← Back to Evaluation</button>
     <div class="container">
         <h1>Evaluation Results</h1>
         <p class="subtitle">Your comprehensive skill assessment</p>
@@ -139,19 +208,53 @@
 
         {% if quiz %}
         <div class="quiz-results">
-            <h2>Quiz Performance</h2>
+            <h2>📊 Quiz Performance</h2>
             <div class="quiz-score">
-                Score: {{ quiz.correct }}/{{ quiz.total }} ({{ quiz.score }}%)
+                {{ quiz.score }}%
             </div>
-            <p style="color: #666; margin-top: 10px;">
-                You answered {{ quiz.correct }} out of {{ quiz.total }} questions correctly.
-            </p>
+            <div class="quiz-details">
+                <div class="quiz-stat">
+                    <div class="quiz-stat-label">Correct Answers</div>
+                    <div class="quiz-stat-value">{{ quiz.correct }}</div>
+                </div>
+                <div class="quiz-stat">
+                    <div class="quiz-stat-label">Total Questions</div>
+                    <div class="quiz-stat-value">{{ quiz.total }}</div>
+                </div>
+                <div class="quiz-stat">
+                    <div class="quiz-stat-label">Accuracy</div>
+                    <div class="quiz-stat-value">{{ quiz.score }}%</div>
+                </div>
+            </div>
+            <div class="performance-indicator {% if quiz.score >= 80 %}excellent{% elif quiz.score >= 60 %}good{% elif quiz.score >= 40 %}average{% else %}needs-improvement{% endif %}">
+                {% if quiz.score >= 80 %}
+                    🎉 Excellent Performance! You have a strong understanding of the technical concepts.
+                {% elif quiz.score >= 60 %}
+                    👍 Good Performance! You're on the right track with solid knowledge.
+                {% elif quiz.score >= 40 %}
+                    📚 Average Performance. Consider reviewing the topics to improve your understanding.
+                {% else %}
+                    💪 Keep Learning! Review the concepts and try again to improve your score.
+                {% endif %}
+            </div>
         </div>
         {% endif %}
 
+        <div class="summary-section" style="margin-top: 30px; padding: 25px; background: #fafafa; border-radius: 12px;">
+            <h2 style="color: #818cf8; margin-bottom: 15px; font-size: 20px;">📋 Evaluation Summary</h2>
+            <p style="color: #666; line-height: 1.8; margin: 0;">
+                Your comprehensive evaluation is complete! The total score of <strong style="color: #818cf8;">{{ analysis.total_score }}/100</strong> is calculated from:
+                Resume Analysis ({{ analysis.breakdown.resume }}/20), Mentor Feedback ({{ analysis.breakdown.feedback }}/30), 
+                and GitHub Analysis ({{ analysis.breakdown.github }}/50).
+                {% if quiz %}
+                Additionally, you scored <strong style="color: #818cf8;">{{ quiz.score }}%</strong> on the technical quiz.
+                {% endif %}
+            </p>
+        </div>
+
         <div class="actions">
-            <a href="/main" class="btn btn-primary">New Evaluation</a>
-            <a href="/" class="btn btn-secondary">Home</a>
+            <a href="/main" class="btn btn-primary">🔄 New Evaluation</a>
+            <a href="/" class="btn btn-secondary">🏠 Home</a>
         </div>
     </div>
 </body>
