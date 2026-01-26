@@ -18,5 +18,15 @@ response=requests.get(f"https://api.github.com/users/{username}/repos",headers=h
 
 final_response=response.json()
 
-for languages in final_response:
-    print(languages["language"])
+for repo in final_response:
+    repo_name=repo["name"]
+    
+    headers1={
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {GIT_TOKEN}",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+
+    response1=requests.get(f"https://api.github.com/repos/{username}/{repo_name}/languages",headers=headers1)
+
+    print(response1.json())
