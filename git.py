@@ -18,5 +18,5 @@ response=requests.get(f"https://api.github.com/users/{username}/repos",headers=h
 
 final_response=response.json()
 
-for repo in final_response:
-    print(repo["name"])
+for languages in final_response:
+    print(languages["language"])
