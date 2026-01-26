@@ -16,5 +16,7 @@ headers={
 
 response=requests.get(f"https://api.github.com/users/{username}/repos",headers=headers)
 
-print(response.json())
+final_response=response.json()
 
+for repo in final_response:
+    print(repo["name"])
