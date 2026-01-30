@@ -1,29 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
+
+<!DOCTYPE HTML>  
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - SkillSync</title>
-    <style> </style>
+<style>
+.error {color: #FF0000;}
+</style>
 </head>
-<body>
-    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post">
-        <input type="text" name="email" value="one@example.com"><br>
-        <input type="text" name="username" value="User"><br>
-        <input type="password" name="pass" value="1234"><br>
-        <input type="submit" name="submit" value="submit">
-    </form>
-</body>
-</html>
+<body> 
 
-<?php 
-    if(isset($_submit)){
+<?php
+    $username=$email=$passwd="";
+    $usernamERR=$emailERR=$passwdERR="";
 
-        echo "done";
-        // $email=$_POST["email"];
-        // $username=$_POST["username"];
-        // $pass=$_POST["pass"];
-
-        // echo "$email";
+    if($_SERVER["REQUEST_METHOD"]=="POST"){
+        if (empty($_POST["name"])){
+            $usernameERR="username is requirement";
+        }
     }
+
+    
 ?>
