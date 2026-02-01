@@ -8,12 +8,15 @@
 </head>
 <body> 
 
+    <div>
     <form action="index.php" method="post">
     <input type="text" name="username" value="rajvidave"><br>
     <input type="text" name="email" value="Email"><br>
     <input type="password" name="passwd" value="Passwd"><br>
     <input type="submit" name="submit" value="submit">
     </form>
+    <a href="login.php">  Login </a>
+    </div>
 </body>
 
 <?php

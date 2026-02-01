@@ -1,6 +1,7 @@
 import dotenv
 import requests
 import os
+import json
 from dotenv import load_dotenv
 
 dotenv.load_dotenv()
@@ -17,7 +18,7 @@ headers={
 response=requests.get(f"https://api.github.com/users/{username}/repos",headers=headers)
 
 final_response=response.json()
-
+final_dictionary={}
 for repo in final_response:
     repo_name=repo["name"]
     
@@ -29,4 +30,14 @@ for repo in final_response:
 
     response1=requests.get(f"https://api.github.com/repos/{username}/{repo_name}/languages",headers=headers1)
 
-    print(response1.json())
+    
+    response=response1.json()
+    
+    for lan in response:
+        if lan not in final_dictionary:
+            final_dictionary[lan]=response[lan]
+        else:
+            final_dictionary[lan]=final_dictionary[lan]+response[lan]
+
+print(final_dictionary)
+    
