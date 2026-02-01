@@ -3,6 +3,10 @@ import requests
 import os
 import json
 from dotenv import load_dotenv
+import numpy as np
+from numpy.linalg import norm
+from sentence_transformers import SentenceTransformer
+
 
 dotenv.load_dotenv()
 
@@ -40,3 +44,4 @@ for repo in final_response:
             final_dictionary[lan]=final_dictionary[lan]+response[lan]
 
 print(final_dictionary)
+
