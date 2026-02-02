@@ -43,5 +43,6 @@ for repo in final_response:
         else:
             final_dictionary[lan]=final_dictionary[lan]+response[lan]
 
-print(final_dictionary)
-
+# print(final_dictionary)
+sorted_dict_desc = dict(sorted(final_dictionary.items(), key=lambda item: item[1], reverse=True))
+print(sorted_dict_desc)
