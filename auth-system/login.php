@@ -11,23 +11,21 @@ $msg = "";
 
 if($_SERVER["REQUEST_METHOD"] == "POST"){
 
-    $name = $_POST['name'];
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    if($user->register($name,$email,$password)){
-        $msg = "Registered successfully";
+    if($user->login($email, $password)){
+        $msg = "Login successful";
     }else{
-        $msg = "Registration failed";
+        $msg = "Invalid email or password";
     }
 }
 ?>
 
 <form method="POST">
-    <input type="text" name="name" placeholder="Name" required><br>
     <input type="email" name="email" placeholder="Email" required><br>
     <input type="password" name="password" placeholder="Password" required><br>
-    <button type="submit">Sign Up</button>
+    <button type="submit">Login</button>
 </form>
 
 <p><?php echo $msg; ?></p>
