@@ -1,14 +1,126 @@
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+import re
+
+abbr_map = {
+
+# ---------- AI / ML / DS ----------
+"ml": "machine learning",
+"ai": "artificial intelligence",
+"dl": "deep learning",
+"cv": "computer vision",
+"nlp": "natural language processing",
+"llm": "large language model",
+"genai": "generative ai",
+"gen ai": "generative ai",
+"rl": "reinforcement learning",
+"mlops": "machine learning operations",
+
+# ---------- Data ----------
+"bi": "business intelligence",
+"eda": "exploratory data analysis",
+"etl": "extract transform load",
+"elt": "extract load transform",
+
+# ---------- Cloud / DevOps ----------
+"ci/cd": "ci cd",
+"ci-cd": "ci cd",
+"iac": "infrastructure as code",
+"sre": "site reliability engineering",
+
+# ---------- Web / App ----------
+"fe": "frontend",
+"be": "backend",
+"ui": "user interface",
+"ux": "user experience",
+"spa": "single page application",
+"pwa": "progressive web application",
+
+# ---------- Mobile ----------
+"rn": "react native",
+
+# ---------- Security ----------
+"soc": "security operations center",
+"iam": "identity and access management",
+
+# ---------- AR / VR / XR ----------
+"ar": "augmented reality",
+"vr": "virtual reality",
+"mr": "mixed reality",
+"xr": "extended reality",
+
+# ---------- Embedded / IoT ----------
+"mcu": "microcontroller",
+"rtos": "real time operating system",
+"bsp": "board support package",
+
+# ---------- VLSI / Hardware ----------
+"asic": "application specific integrated circuit",
+"fpga": "field programmable gate array",
+"rtl": "register transfer level",
+"sta": "static timing analysis",
+"dft": "design for testability",
+"pd": "physical design",
+
+# ---------- General ----------
+"api": "api",   # keeps api consistent
+"rest": "rest",
+"oop": "object oriented programming",
+"os": "operating system"
+}
 
 
-job_description=input("Enter Job description = ")
+def normalize_text(text):
+    text = text.lower()
 
-stop_words=set(stopwords.words('english'))
-tokens=word_tokenize(job_description.lower())
+    for k, v in abbr_map.items():
+        text = text.replace(k, v)
 
-filtered_tokens = [word for word in tokens if word not in stop_words]
+    text = re.sub(r"[^a-z0-9\s]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+
+    return text
+
+def generate_ngrams(words, n):
+    return [" ".join(words[i:i+n]) for i in range(len(words)-n+1)]
+
+def build_phrases(text):
+    words = text.split()
+
+    unigrams = words
+    bigrams  = generate_ngrams(words, 2)
+    trigrams = generate_ngrams(words, 3)
+
+    return set(unigrams + bigrams + trigrams)
+
+def detect_domains(job_description):
+
+    text = normalize_text(job_description)
+    phrases = build_phrases(text)
+
+    scores = {}
+
+    for domain, keys in domain_keywords.items():
+        score = 0
+
+        for k in keys:
+            if k in phrases:
+                score += 1
+
+        scores[domain] = score
+
+    return scores
+
+def get_top_domain(scores):
+    return max(scores, key=scores.get)
+
+def jd_to_languages(job_description):
+
+    scores = detect_domains(job_description)
+
+    top_domain = get_top_domain(scores)
+
+    languages = domain_to_languages.get(top_domain, [])
+
+    return top_domain, languages, scores
 
 
 domain_keywords = {
