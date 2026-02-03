@@ -220,8 +220,7 @@ def main():
     job_description=input("Enter detailed job description = ")
     score = detect_domains(job_description)
     top_domain = get_top_domain(score)
-    # print(score)
-    print(top_domain)
+    return top_domain
 
 if __name__=="__main__":
     main()

@@ -7,8 +7,9 @@ import numpy as np
 from numpy.linalg import norm
 from sentence_transformers import SentenceTransformer
 from languages import domain_to_languages
-from domain import top_domain
+from domain import main
 
+top_domain=main()
 
 dotenv.load_dotenv()
 
@@ -48,3 +49,8 @@ for repo in final_response:
 # print(final_dictionary)
 sorted_dict_desc = dict(sorted(final_dictionary.items(), key=lambda item: item[1], reverse=True))
 print(sorted_dict_desc)
+
+for domain in domain_to_languages:
+    if (top_domain==domain):
+        print(top_domain)
+
