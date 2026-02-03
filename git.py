@@ -52,5 +52,5 @@ print(sorted_dict_desc)
 
 for domain in domain_to_languages:
     if (top_domain==domain):
-        print(top_domain)
+        print(domain_to_languages.get(domain))
 
