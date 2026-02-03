@@ -67,62 +67,6 @@ abbr_map = {
 "os": "operating system"
 }
 
-
-def normalize_text(text):
-    text = text.lower()
-
-    for k, v in abbr_map.items():
-        text = text.replace(k, v)
-
-    text = re.sub(r"[^a-z0-9\s]", " ", text)
-    text = re.sub(r"\s+", " ", text).strip()
-
-    return text
-
-def generate_ngrams(words, n):
-    return [" ".join(words[i:i+n]) for i in range(len(words)-n+1)]
-
-def build_phrases(text):
-    words = text.split()
-
-    unigrams = words
-    bigrams  = generate_ngrams(words, 2)
-    trigrams = generate_ngrams(words, 3)
-
-    return set(unigrams + bigrams + trigrams)
-
-def detect_domains(job_description):
-
-    text = normalize_text(job_description)
-    phrases = build_phrases(text)
-
-    scores = {}
-
-    for domain, keys in domain_keywords.items():
-        score = 0
-
-        for k in keys:
-            if k in phrases:
-                score += 1
-
-        scores[domain] = score
-
-    return scores
-
-def get_top_domain(scores):
-    return max(scores, key=scores.get)
-
-def jd_to_languages(job_description):
-
-    scores = detect_domains(job_description)
-
-    top_domain = get_top_domain(scores)
-
-    languages = domain_to_languages.get(top_domain, [])
-
-    return top_domain, languages, scores
-
-
 domain_keywords = {
 
     "embedded_systems": [
@@ -220,3 +164,64 @@ domain_keywords = {
     "test cases","manual testing"
     ]
 }
+
+
+def normalize_text(text):
+    text = text.lower()
+
+    for k, v in abbr_map.items():
+        text = text.replace(k, v)
+
+    text = re.sub(r"[^a-z0-9\s]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+
+    return text
+
+def generate_ngrams(words, n):
+    result = []
+    for i in range(len(words) - n + 1):
+        phrase = " ".join(words[i:i+n])
+        result.append(phrase)
+
+    return result
+
+def build_phrases(text):
+    words = text.split()
+
+    unigrams = words
+    bigrams  = generate_ngrams(words, 2)
+    trigrams = generate_ngrams(words, 3)
+
+    return set(unigrams + bigrams + trigrams)
+
+def detect_domains(job_description):
+
+    text = normalize_text(job_description)
+    phrases = build_phrases(text)
+
+    scores = {}
+
+    for domain, keys in domain_keywords.items():
+        score = 0
+
+        for k in keys:
+            if k in phrases:
+                score += 1
+
+        scores[domain] = score
+
+    return scores
+
+def get_top_domain(scores):
+    return max(scores, key=scores.get)
+
+
+def main():
+    job_description=input("Enter detailed job description = ")
+    score = detect_domains(job_description)
+    top_domain = get_top_domain(score)
+    # print(score)
+    print(top_domain)
+
+if __name__=="__main__":
+    main()
