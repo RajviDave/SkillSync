@@ -8,15 +8,20 @@
 <body>
     <h1>Input Form</h1>
     <form method="POST" action="input_form.php">
-        <label>Enter Job description</label>
-        <input name="jd" type="text">
-        <label>Upload resume</label>
-        <input name="resume" type="file">
-        <label>Enter mentor's comments</label>
-        <input name="comments" type="text">
-        <label>Enter git username</label>
-        <input name="git" type="text">
-        <button type="submit">Submit</button>
+        <label>Enter Job description</label><br>
+        <input name="jd" type="text"><br>
+        <label>Upload resume</label><br>
+        <input name="resume" type="file"><br>
+        <label>Enter mentor's comments</label><br>
+        <input name="comments" type="text"><br>
+        <label>Enter git username</label><br>
+        <input name="git" type="text"><br>
+        <button type="submit">Submit</button><br>
     </form>
 </body>
 </html>
+
+<?php
+
+
+?>
