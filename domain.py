@@ -80,7 +80,7 @@ domain_keywords = {
     ],
 
     "frontend_web": [
-    "frontend","web ui","ui developer","html","css","javascript",
+    "frontend","web ui","ui developer","HTML","CSS","javascript",
     "react","angular","vue","responsive","tailwind"
     ],
 
