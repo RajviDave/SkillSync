@@ -16,7 +16,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     $password = $_POST['password'];
 
     if($user->register($name,$email,$password)){
-        $msg = "Registered successfully";
+        header("Location: login.php");
+        exit();
     }else{
         $msg = "Registration failed";
     }
