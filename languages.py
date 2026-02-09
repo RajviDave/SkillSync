@@ -2,7 +2,7 @@ domain_to_languages = {
 
 "embedded_systems": ["C","C++"],
 "vlsi": ["Verilog","SystemVerilog","TCL"],
-"frontend_web": ["JavaScript","TypeScript"],
+"frontend_web": ["JavaScript","TypeScript","HTML","CSS","React"],
 "backend_web": ["Python","Java","Node.js"],
 "fullstack_web": ["JavaScript","TypeScript","Python"],
 "mobile_app": ["Kotlin","Swift","Dart"],
