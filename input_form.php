@@ -7,11 +7,11 @@
 </head>
 <body>
     <h1>Input Form</h1>
-    <form method="POST" action="input_form.php">
+    <form method="POST" action="input_form.php" enctype="multipart/form-data">
         <label>Enter Job description</label><br>
         <input name="jd" type="text"><br>
         <label>Upload resume</label><br>
-        <input name="resume" type="file"><br>
+        <input name="resume" type="file" accept="application/pdf"><br>
         <label>Enter mentor's comments</label><br>
         <input name="comments" type="text"><br>
         <label>Enter git username</label><br>
@@ -22,6 +22,19 @@
 </html>
 
 <?php
-
+    if($_SERVER["REQUEST_METHOD"]=="POST"){
+        $job_description=$_POST["jd"];
+        if ( isset($_FILES['resume'])&& $_FILES['resume']['error'] === 0) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $type  = finfo_file($finfo, $_FILES['resume']['tmp_name']);
+        
+        if ($type !== 'application/pdf') {
+            echo "not pdf";
+        }else{
+            echo "it is pdf file";
+        }
+        }
+        $git=$_POST["git"];
+    }
 
 ?>
