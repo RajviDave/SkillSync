@@ -165,7 +165,6 @@ domain_keywords = {
     ]
 }
 
-
 def normalize_text(text):
     text = text.lower()
 
@@ -214,7 +213,6 @@ def detect_domains(job_description):
 
 def get_top_domain(scores):
     return max(scores, key=scores.get)
-
 
 def main():
     job_description=input("Enter detailed job description = ")
