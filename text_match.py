@@ -8,7 +8,7 @@ from nltk.tokenize import word_tokenize
 j_d=input("Enter job description = ")
 jd=j_d.lower()
 jd=re.sub(r'[^a-zA-Z0-9\s]', ' ', jd)
-clean_text=jd
+clean_text=jd   
 
 stop_words = set(stopwords.words('english'))
 tokens = word_tokenize(j_d.lower())
@@ -27,4 +27,3 @@ for domain,keyword_list in domain_keywords.items():
             
 
 print(matched_domains)
-
