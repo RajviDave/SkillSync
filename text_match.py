@@ -22,3 +22,6 @@ for domain,keyword_list in domain_keywords.items():
         if " " in keyword:
             if keyword in clean_text:
                 print(domain)
+        else:
+            if keyword in filtered_tokens:
+                print(domain)
