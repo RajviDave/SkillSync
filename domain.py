@@ -70,98 +70,110 @@ abbr_map = {
 domain_keywords = {
 
     "embedded_systems": [
-    "embedded","microcontroller","firmware","rtos","bare metal",
-    "arm cortex","stm32","arduino","raspberry pi","spi","i2c","uart"
+    "embedded","firmware","microcontroller","rtos","bare metal",
+    "arm cortex","stm32","esp32","arduino","raspberry pi",
+    "spi","i2c","uart","can bus","device driver","board bringup"
     ],
 
     "vlsi": [
-    "vlsi","asic","fpga","verilog","systemverilog","uvm","rtl",
-    "physical design","synthesis","timing analysis","eda"
+    "vlsi","asic","fpga","rtl","verilog","systemverilog","uvm",
+    "physical design","synthesis","sta","timing analysis",
+    "floorplanning","place and route","eda","dft","low power design"
     ],
 
     "frontend_web": [
-    "frontend","web ui","ui developer","HTML","CSS","javascript",
-    "react","angular","vue","responsive","tailwind"
+    "frontend","web ui","ui developer","spa","responsive design",
+    "web interface","user interface","client side","ui ux"
     ],
 
     "backend_web": [
-    "backend","server side","api","rest api","microservices",
-    "authentication","authorization","scalable systems"
+    "backend","server side","api development","rest api",
+    "microservices","authentication","authorization",
+    "scalable systems","backend engineer","distributed systems"
     ],
 
     "fullstack_web": [
-    "full stack","fullstack","end to end web","frontend and backend"
+    "full stack","fullstack","end to end web",
+    "frontend and backend","full stack developer"
     ],
 
     "mobile_app": [
-    "android","ios","mobile application","flutter","react native",
-    "swift","kotlin","mobile developer"
+    "mobile application","android developer","ios developer",
+    "mobile engineer","cross platform app","mobile ui"
     ],
 
     "ml_ai_dl_cv": [
     "machine learning","deep learning","artificial intelligence",
-    "computer vision","nlp","model training","neural network",
-    "pytorch","tensorflow","huggingface"
+    "computer vision","nlp","predictive model","model training",
+    "neural network","data driven model","ai engineer"
     ],
 
     "data_science": [
-    "data science","statistical analysis","feature engineering",
-    "exploratory data analysis","model evaluation"
+    "data science","statistical analysis","data modeling",
+    "predictive analytics","exploratory data analysis",
+    "hypothesis testing","applied statistics"
     ],
 
     "data_engineering": [
-    "data engineer","etl","pipeline","data pipeline","airflow",
-    "spark","hadoop","kafka","big data","data warehouse"
+    "data engineering","etl","data pipeline","big data processing",
+    "stream processing","batch processing","data warehouse",
+    "lakehouse","data ingestion"
     ],
 
     "data_analytics": [
-    "data analyst","dashboard","reporting","power bi","tableau",
-    "business intelligence","sql analysis"
+    "data analyst","dashboarding","reporting",
+    "business intelligence","data visualization",
+    "analytics reporting"
     ],
 
     "cloud": [
-    "cloud","aws","azure","gcp","cloud architecture",
-    "serverless","cloud deployment"
+    "cloud engineer","cloud architecture","cloud deployment",
+    "multi cloud","hybrid cloud","cloud migration",
+    "serverless architecture"
     ],
 
     "devops": [
-    "devops","ci cd","docker","kubernetes","jenkins",
-    "monitoring","infrastructure as code","terraform"
+    "devops","ci cd","release pipeline","build pipeline",
+    "infrastructure automation","site reliability",
+    "platform engineering","monitoring and logging"
     ],
 
     "cyber_security": [
-    "security","cyber security","pentesting","vulnerability",
-    "soc","network security","incident response","siem"
+    "cyber security","information security","security analyst",
+    "penetration testing","soc analyst","incident response",
+    "threat detection","security monitoring"
     ],
 
     "ar_vr_xr": [
     "augmented reality","virtual reality","mixed reality",
-    "xr","unity","unreal","3d interaction","spatial computing"
+    "xr developer","immersive application","spatial computing"
     ],
 
     "game_development": [
-    "game development","game engine","unity","unreal engine",
-    "game programmer","3d game","c# game"
+    "game developer","game engine developer","game programming",
+    "real time graphics","gameplay programming"
     ],
 
     "iot": [
-    "iot","internet of things","sensor data","edge device",
-    "mqtt","device integration"
+    "internet of things","connected devices","edge computing",
+    "sensor network","device telemetry","embedded iot"
     ],
 
     "robotics": [
-    "robotics","ros","path planning","slam","robot control",
-    "autonomous robot"
+    "robotics engineer","robot software","autonomous systems",
+    "robot perception","robot navigation","motion planning"
     ],
 
     "blockchain": [
-    "blockchain","smart contract","web3","ethereum",
-    "solidity","defi","dapp"
+    "blockchain developer","web3 developer",
+    "decentralized application","smart contract development",
+    "crypto application"
     ],
 
     "software_testing": [
-    "qa","testing","automation testing","selenium",
-    "test cases","manual testing"
+    "software testing","quality assurance",
+    "test automation engineer","manual tester",
+    "test planning","test execution"
     ]
 }
 
@@ -213,6 +225,9 @@ def detect_domains(job_description):
 
 def get_top_domain(scores):
     return max(scores, key=scores.get)
+
+def jd(job_description):
+    return job_description
 
 def main():
     job_description=input("Enter detailed job description = ")
