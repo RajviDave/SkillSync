@@ -20,5 +20,5 @@ filtered_tokens = [word for word in tokens if word not in stop_words]
 for domain,keyword_list in domain_keywords.items():
     for keyword in keyword_list:
         if " " in keyword:
-            if keyword in filtered_tokens:
-                print(keyword)
+            if keyword in clean_text:
+                print(domain)
