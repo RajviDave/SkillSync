@@ -12,4 +12,5 @@ with pdfplumber.open(pdf_path) as pdf:
         all_text+='\n'+single_page_text
 
 all_text=all_text.lower()
+all_text=re.sub(r'[^a-zA-Z0-9\s]',all_text)
 
