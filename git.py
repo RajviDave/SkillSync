@@ -7,9 +7,8 @@ import numpy as np
 from numpy.linalg import norm
 from sentence_transformers import SentenceTransformer
 from languages import domain_to_languages
-from domain import main
-
-top_domain=main()
+from domain import *
+from text_match import *
 
 dotenv.load_dotenv()
 
@@ -49,8 +48,12 @@ for repo in final_response:
 # print(final_dictionary)
 sorted_dict_desc = dict(sorted(final_dictionary.items(), key=lambda item: item[1], reverse=True))
 print(sorted_dict_desc)
+final_languages=[]
+for key,values in matched_domains.items():
+    for keys,lan_list in domain_to_languages.items():
+        if key in keys:
+            for lan in lan_list:
+                if lan in sorted_dict_desc:
+                    final_languages.append(lan)
 
-for domain in domain_to_languages:
-    if (top_domain==domain):
-        print(domain_to_languages.get(domain))
-
+print(final_languages)
