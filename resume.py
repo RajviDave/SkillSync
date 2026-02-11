@@ -41,7 +41,6 @@ for key,value in matched_domains.items():
                     if pointer in filtered_tokens:
                         languages[key] = languages.get(key, 0) + 1
 
-# print(languages)
-languages=sorted(languages)
-print("It highly matches with :")
+print(languages)
+
 
