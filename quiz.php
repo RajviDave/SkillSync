@@ -29,7 +29,7 @@ $questions = json_decode($response, true);   // <<< use this
 
 <?php foreach ($questions as $q): ?>
 
-    <p><b><?php echo $q['question']; ?></b></p>
+    <p><b><?php echo $q['quistion']; ?></b></p>
 
     <label>
         <input type="radio" name="answers[<?php echo $q['id']; ?>]" value="A">
