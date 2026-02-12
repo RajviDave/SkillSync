@@ -229,14 +229,14 @@ domain_keywords = {
 # def get_top_domain(scores):
 #     return max(scores, key=scores.get)
 
-def jd(job_description):
-    return job_description
+# def jd(job_description):
+#     return job_description
 
-def main():
-    job_description=input("Enter detailed job description = ")
+# def main():
+    # job_description=input("Enter detailed job description = ")
     # score = detect_domains(job_description)
     # top_domain = get_top_domain(score)
     # return top_domain
 
-if __name__=="__main__":
-    main()
+# if __name__=="__main__":
+#     main()

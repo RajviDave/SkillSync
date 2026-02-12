@@ -1,1 +1,2 @@
-comments=input("Enter your comments here = ")
+def comments(comments):
+    return comments
