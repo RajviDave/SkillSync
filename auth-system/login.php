@@ -15,7 +15,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     $password = $_POST['password'];
 
     if($user->login($email, $password)){
-        header("Location: ../input_form.php");
+        header("Location: ../templates/input_form.html");
         exit();
     }else{
         $msg = "Invalid email or password";
