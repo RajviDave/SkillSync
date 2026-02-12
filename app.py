@@ -5,6 +5,8 @@ from resume import resume
 from comments import comments
 from git import git
 from domain_match import match_domain
+import mysql.connector
+import random
 
 app = Flask(__name__)
 
@@ -46,5 +48,112 @@ def submit_form():
     "github": github_results
     })
 
+def get_db_connection():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="auth_system"
+    )
+
+@app.route("/quiz/generate", methods=["POST"])
+def generate_quiz():
+
+    data = request.get_json()
+
+    languages = data.get("languages", [])
+    total = int(data.get("total_questions", 15))
+
+    if not languages:
+        return jsonify({"error": "languages required"}), 400
+
+    easy_n = int(total * 0.4)
+    medium_n = int(total * 0.4)
+    hard_n = total - easy_n - medium_n
+
+    conn = get_db_connection()
+    cur = conn.cursor(dictionary=True)
+
+    def fetch(diff, limit):
+        placeholders = ",".join(["%s"] * len(languages))
+
+        query = f"""
+            SELECT id, language, difficulty,
+                   quistion, optionA, optionB, optionC, optionD
+            FROM quiz
+            WHERE difficulty = %s
+            AND language IN ({placeholders})
+            ORDER BY RAND()
+            LIMIT %s
+        """
+
+        params = [diff] + languages + [limit]
+        cur.execute(query, params)
+        return cur.fetchall()
+
+    questions = []
+    questions += fetch("easy", easy_n)
+    questions += fetch("medium", medium_n)
+    questions += fetch("hard", hard_n)
+
+    random.shuffle(questions)
+
+    cur.close()
+    conn.close()
+
+    return jsonify(questions)
+
+@app.route("/quiz/submit", methods=["POST"])
+def submit_quiz():
+    
+    data = request.get_json()
+
+    answers = data.get("answers", {})
+
+    if not answers:
+        return jsonify({"error": "answers required"}), 400
+
+    conn = get_db_connection()
+    cur = conn.cursor(dictionary=True)
+
+    question_ids = list(answers.keys())
+
+    placeholders = ",".join(["%s"] * len(question_ids))
+
+    query = f"""
+        SELECT id, correct_option, language
+        FROM quiz
+        WHERE id IN ({placeholders})
+    """
+
+    cur.execute(query, question_ids)
+
+    rows = cur.fetchall()
+
+    total = len(rows)
+    score = 0
+
+    per_language = {}
+
+    for row in rows:
+        qid = str(row["id"])
+        correct = row["correct_option"]
+        selected = answers.get(qid)
+
+        if selected == correct:
+            score += 1
+            lang = row["language"]
+            per_language[lang] = per_language.get(lang, 0) + 1
+
+    cur.close()
+    conn.close()
+
+    return jsonify({
+        "score": score,
+        "total": total,
+        "per_language_correct": per_language
+    })
+
 if __name__ == "__main__":
+    print(app.url_map)
     app.run(debug=True)
