@@ -1,32 +1,77 @@
 <?php
-require_once "config/Database.php";
-require_once "classes/User.php";
+session_start();
+require_once "config/database.php";
 
-$db = new Database();
-$conn = $db->connect();
+$error = "";
 
-$user = new User($conn);
+// TEST CASE 0: Ensure logic only runs on Form Submit
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-$msg = "";
+    $db = new Database();
+    $conn = $db->connect();
 
-if($_SERVER["REQUEST_METHOD"] == "POST"){
+    // Sanitize inputs
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
 
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+    // TEST CASE 1: Check for Empty Fields
+    if (empty($email) || empty($password)) {
+        $error = "Please fill in both email and password.";
+    } else {
+        // Prepare statement to find user
+        $stmt = $conn->prepare("SELECT id, name, password FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    if($user->login($email, $password)){
-        header("Location: ../templates/input_form.html");
-        exit();
-    }else{
-        $msg = "Invalid email or password";
+        // TEST CASE 2: User Exists Check
+        if ($result->num_rows === 1) {
+            $row = $result->fetch_assoc();
+
+            // TEST CASE 3: Password Verification
+            if (password_verify($password, $row['password'])) {
+                // Success: Set session variables
+                $_SESSION['user_id']   = $row['id'];
+                $_SESSION['user_name'] = $row['name'];
+
+                // Redirect to the dashboard/input form
+                header("Location: ../templates/input_form.html");
+                exit;
+            } else {
+                // Failed Test Case 3
+                $error = "Incorrect password.";
+            }
+        } else {
+            // Failed Test Case 2 (Email not found)
+            $error = "No account found with that email.";
+        }
+        $stmt->close();
     }
 }
 ?>
 
-<form method="POST">
-    <input type="email" name="email" placeholder="Email" required><br>
-    <input type="password" name="password" placeholder="Password" required><br>
-    <button type="submit">Login</button>
-</form>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+    
+    <?php if(!empty($error)): ?>
+        <p style='color:red; font-weight:bold;'><?php echo $error; ?></p>
+    <?php endif; ?>
 
-<p><?php echo $msg; ?></p>
+    <?php if(isset($_GET['signup']) && $_GET['signup'] == 'success'): ?>
+        <p style='color:green;'>Signup successful! Please login.</p>
+    <?php endif; ?>
+
+    <form method="POST" action="login.php">
+        <input type="email" name="email" placeholder="Email" required value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>"><br><br>
+        <input type="password" name="password" placeholder="Password" required><br><br>
+        <button type="submit">Login</button>
+        <br><br>
+        <a href="signup.php">Don't have an account? Sign Up</a>
+    </form>
+</body>
+</html>
