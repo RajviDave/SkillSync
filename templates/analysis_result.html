@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analysis Result</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .score-card { 
+            border: 1px solid #ccc; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .score { color: #2ecc71; font-weight: bold; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+
+    <h1>Candidate Analysis Report</h1>
+
+    <div class="score-card">
+        <h3>Resume Match Score</h3>
+        <ul>
+            {% for domain, score in resume_scores.items() %}
+                <li>
+                    Domain: <strong>{{ domain }}</strong> <br>
+                    Score: <span class="score">{{ score }}</span>
+                </li>
+            {% else %}
+                <li>No specific domain matched.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="score-card">
+        <h3>Mentor Feedback</h3>
+        <p>{{ mentor_feedback }}</p>
+    </div>
+
+    <div class="score-card">
+        <h3>GitHub Skills Found</h3>
+        {% if git_data %}
+            <ul>
+            {% for language in git_data %}
+                <li>{{ language }}</li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No matching code found on GitHub.</p>
+        {% endif %}
+    </div>
+
+    <a href="/">Go Back</a>
+
+</body>
+</html>

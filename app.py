@@ -10,7 +10,6 @@ import random
 from flask import session
 from languages import domain_to_languages
 
-
 app = Flask(__name__)
 
 app.secret_key = "skillsync_secret"
@@ -46,6 +45,13 @@ def submit_form():
     comments_results=comments(mentor_comments)
     github_results=git(github_username,domains)
     
+    # CHANGE THIS LINE: Instead of jsonify, use render_template
+    return render_template(
+        "analysis_result.html",       # The HTML file you want to show
+        resume_scores=resume_results, # Passing the resume score dict
+        mentor_feedback=comments_results,
+        git_data=github_results
+    )
 
 def get_db_connection():
     return mysql.connector.connect(
