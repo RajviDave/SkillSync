@@ -113,10 +113,7 @@ def submit_quiz():
     
     answers = request.form.to_dict()
 
-    # answers looks like:
-    # {'answers[3]': 'A', 'answers[7]': 'C', ...}
-
-    # normalize keys
+    # Normalize keys
     clean = {}
     for k, v in answers.items():
         qid = k.replace("answers[", "").replace("]", "")
@@ -129,25 +126,42 @@ def submit_quiz():
     cur = conn.cursor(dictionary=True)
 
     for qid, user_ans in clean.items():
-        cur.execute(
-            "SELECT correct_option FROM quiz WHERE id=%s",
-            (qid,)
-        )
+        cur.execute("SELECT correct_option FROM quiz WHERE id=%s", (qid,))
         row = cur.fetchone()
-
         if row and row["correct_option"] == user_ans:
             score += 1
 
     cur.close()
     conn.close()
 
+    # --- NEW LOGIC: Calculate Final Weighted Score ---
+    
+    # 1. Calculate Quiz Percentage (e.g., 10/15 -> 66.6%)
+    if total > 0:
+        quiz_percentage = (score / total) * 100
+    else:
+        quiz_percentage = 0
+
+    # 2. Retrieve Resume Score from Session (Default to 0 if missing)
+    resume_score = session.get('resume_score_numeric', 0)
+
+    # 3. Apply Weights (30% Resume, 70% Quiz)
+    final_weighted_score = (resume_score * 0.30) + (quiz_percentage * 0.70)
+
+    # Round for display
+    final_weighted_score = round(final_weighted_score, 2)
+    resume_score = round(resume_score, 2)
+    quiz_percentage = round(quiz_percentage, 2)
+
     return render_template(
         "result.html",
-        score=score,
-        total=total
+        score=score,                # Raw quiz score (e.g., 10)
+        total=total,                # Total questions (e.g., 15)
+        resume_score=resume_score,  # Resume % (e.g., 60.0)
+        quiz_percentage=quiz_percentage, # Quiz % (e.g., 66.6)
+        final_score=final_weighted_score # Final Weighted Score
     )
     
-
 @app.route("/analyze", methods=["POST"])
 def analyze():
     resume_file = request.files["resume"]
@@ -159,39 +173,46 @@ def analyze():
     resume_path = os.path.join("uploads", resume_file.filename)
     resume_file.save(resume_path)
 
-    # 1. Identify Domains from JD
+    # 1. Identify Domains
     jd_domains = match_domain(jd)
-    print("DEBUG: Domains matched from JD:", jd_domains)
 
-    # 2. Run Analysis
+    # 2. Get Resume Scores (Returns dict like {'Web Dev': '60/100'})
     resume_results = resume(resume_path, jd_domains)
-    comments_results = comments(comments_text)
     
-    # 3. Try to get languages from GitHub
-    quiz_languages = git(github_username, jd_domains)
-    print("DEBUG: Languages from GitHub:", quiz_languages)
+    # --- NEW LOGIC: Calculate Average Resume Score ---
+    total_resume_score = 0
+    count = 0
+    
+    for domain, score_str in resume_results.items():
+        # score_str is "60/100", we need just 60
+        try:
+            numeric_score = int(score_str.split('/')[0])
+            total_resume_score += numeric_score
+            count += 1
+        except:
+            continue
+            
+    # Avoid division by zero
+    avg_resume_score = total_resume_score / count if count > 0 else 0
+    
+    # SAVE TO SESSION for later use
+    session['resume_score_numeric'] = avg_resume_score
+    # -------------------------------------------------
 
-    # --- THE FIX: FALLBACK LOGIC ---
-    # If GitHub returns nothing (empty list), manually generate languages from the JD.
-    if not quiz_languages:
-        print("DEBUG: GitHub list empty. Falling back to JD requirements.")
-        
+    # 3. Get GitHub Data (Your existing logic)
+    github_results = git(github_username, jd_domains)
+    
+    # Fallback logic for quiz languages
+    if not github_results:
         fallback_set = set()
-        
-        # Handle if jd_domains is dict or list
         iterable = jd_domains.keys() if isinstance(jd_domains, dict) else jd_domains
-        
         for domain in iterable:
             if domain in domain_to_languages:
-                # Add all languages associated with this domain
                 for lang in domain_to_languages[domain]:
                     fallback_set.add(lang)
-        
-        quiz_languages = list(fallback_set)
+        github_results = list(fallback_set)
 
-    # Final cleanup to ensure it's a list of strings
-    session["quiz_languages"] = quiz_languages
-    print("DEBUG: Final Session Languages:", session["quiz_languages"])
+    session["quiz_languages"] = github_results
 
     return redirect("/quiz")
 
@@ -246,7 +267,6 @@ def quiz_page():
     random.shuffle(questions)
 
     return render_template("quiz.html", questions=questions)
-
 
 if __name__ == "__main__":
     print(app.url_map)
