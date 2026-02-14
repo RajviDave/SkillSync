@@ -144,13 +144,19 @@ def submit_quiz():
 
     # 2. Retrieve Resume Score from Session (Default to 0 if missing)
     resume_score = session.get('resume_score_numeric', 0)
+    mentor_score = session.get('mentor_score', 50)
 
     # 3. Apply Weights (30% Resume, 70% Quiz)
-    final_weighted_score = (resume_score * 0.30) + (quiz_percentage * 0.70)
+    final_weighted_score = (
+        (resume_score * 0.30) + 
+        (quiz_percentage * 0.50) + 
+        (mentor_score * 0.20)
+    )
 
     # Round for display
     final_weighted_score = round(final_weighted_score, 2)
     resume_score = round(resume_score, 2)
+    mentor_Score=round(mentor_score,2)
     quiz_percentage = round(quiz_percentage, 2)
 
     return render_template(
@@ -159,6 +165,7 @@ def submit_quiz():
         total=total,                # Total questions (e.g., 15)
         resume_score=resume_score,  # Resume % (e.g., 60.0)
         quiz_percentage=quiz_percentage, # Quiz % (e.g., 66.6)
+        mentor_score=mentor_score,
         final_score=final_weighted_score # Final Weighted Score
     )
     
@@ -198,6 +205,11 @@ def analyze():
     # SAVE TO SESSION for later use
     session['resume_score_numeric'] = avg_resume_score
     # -------------------------------------------------
+
+    # 2. Get Mentor Comment Score (NEW)
+    comments_text = request.form.get("comments", "")
+    mentor_score = comments(comments_text) # Returns integer 0-100
+    session['mentor_score'] = mentor_score # Save to session
 
     # 3. Get GitHub Data (Your existing logic)
     github_results = git(github_username, jd_domains)
