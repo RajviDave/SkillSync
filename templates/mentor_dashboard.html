@@ -135,7 +135,16 @@
                 <canvas id="performanceChart" height="120"></canvas>
             </div>
         </div>
-
+        <div class="search-container" style="margin-bottom: 20px;">
+        <form action="/mentor_dashboard" method="GET" style="display: flex; gap: 10px;">
+            <input type="text" name="search" placeholder="Search student name..." 
+                style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; outline: none;">
+            <button type="submit" class="btn" style="padding: 10px 20px;">
+                <i class="fas fa-search"></i> Search
+            </button>
+            <a href="/mentor_dashboard" class="btn" style="background: #64748b; padding: 10px 15px;">Clear</a>
+        </form>
+    </div>
         <div class="table-container">
             <table>
                 <thead>

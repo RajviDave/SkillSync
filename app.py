@@ -34,7 +34,7 @@ def home():
     
     # If Mentor, go to Dashboard
     if session.get('role') == 'mentor':
-        return redirect("/mentor/dashboard")
+        return redirect("/mentor_dashboard")
     
     stage = session.get('assessment_stage')
     if stage == 'quiz':
@@ -103,7 +103,7 @@ def login():
     # NEW: If already logged in, redirect to dashboard immediately
     if 'user_id' in session:
         if session.get('role') == 'mentor':
-            return redirect("/mentor/dashboard")
+            return redirect("/mentor_dashboard")
         else:
             return redirect("/")
         
@@ -124,7 +124,7 @@ def login():
             session['role'] = user['role']
             
             if user['role'] == 'mentor':
-                return redirect("/mentor/dashboard")
+                return redirect("/mentor_dashboard")
             else:
                 return redirect("/")
         else:
@@ -139,30 +139,44 @@ def logout():
 
 # --- ROUTES: MENTOR DASHBOARD ---
 
-@app.route("/mentor/dashboard")
+@app.route("/mentor_dashboard")
 def mentor_dashboard():
-    # Security Check
+    # 1. Security Check First
     if session.get('role') != 'mentor':
-        return "Access Denied: Mentors Only"
+        return "Access Denied: Mentors Only", 403
+
+    # 2. Get the search term from the URL (e.g., /mentor_dashboard?search=Taanu)
+    search_query = request.args.get('search', '').strip()
 
     conn = get_db_connection()
     cur = conn.cursor(dictionary=True)
     
-    # Fetch all results joined with user names
+    # 3. Base Query with JOIN
     query = """
         SELECT users.name, ar.job_domain, ar.resume_score, ar.quiz_score, 
                ar.mentor_score, ar.final_score, ar.date_added
         FROM assessment_results ar
         JOIN users ON ar.student_id = users.id
-        ORDER BY ar.date_added DESC
     """
-    cur.execute(query)
+    
+    # 4. Add Search Logic if a query exists
+    if search_query:
+        query += " WHERE users.name LIKE %s"
+        # The % are wildcards for partial matching
+        search_param = f"%{search_query}%"
+        query += " ORDER BY ar.date_added DESC"
+        cur.execute(query, (search_param,))
+    else:
+        query += " ORDER BY ar.date_added DESC"
+        cur.execute(query)
+    
     results = cur.fetchall()
     
     cur.close()
     conn.close()
 
-    return render_template("mentor_dashboard.html", students=results)
+    # 5. Pass results AND search_query back to the page (to keep the text in the search bar)
+    return render_template("mentor_dashboard.html", students=results, last_search=search_query)
 
 # --- ROUTES: STUDENT ASSESSMENT FLOW ---
 
