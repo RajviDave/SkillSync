@@ -3,21 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Input Form</title>
+    <title>Assessment Setup - SkillSync</title>
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <style>
+        .assessment-card {
+            background: var(--white);
+            padding: 3rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 600px; /* Wider than login card */
+            position: relative;
+            overflow: hidden;
+            margin: 20px; /* Space on mobile */
+        }
+        /* Top Bar Accent */
+        .assessment-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+    </style>
 </head>
 <body>
-    <h1>Input Form</h1>
-    <form method="POST" action="/analyze" enctype="multipart/form-data">
-        <label>Enter Job description</label><br>
-        <input name="jd" type="text"><br>
-        <label>Upload resume</label><br>
-        <input name="resume" type="file" accept="application/pdf"><br>
-        <label>Enter mentor's comments</label><br>
-        <input name="comments" type="text"><br>
-        <label>Enter git username</label><br>
-        <input name="git" type="text"><br>
-        <button type="submit">Submit</button><br>
-    </form>
+
+    <div class="assessment-card">
+        
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div class="brand-logo">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <h2>New Assessment</h2>
+            <p class="subtitle">Fill in the details to generate your quiz</p>
+        </div>
+
+        <form method="POST" action="/analyze" enctype="multipart/form-data">
+            
+            <div class="input-group">
+                <label>Job Description (JD)</label>
+                <textarea name="jd" placeholder="Paste the full job description here..." required></textarea>
+                <i class="fas fa-briefcase"></i>
+            </div>
+
+            <label style="font-weight:600; font-size:0.9rem; color:var(--accent); display:block; margin-bottom:8px;">Upload Resume (PDF)</label>
+            <div class="file-upload-wrapper">
+                <input name="resume" type="file" accept="application/pdf" required>
+            </div>
+
+            <div class="input-group">
+                <label>Mentor's Feedback</label>
+                <textarea name="comments" placeholder="Any specific areas to focus on?" rows="2"></textarea>
+                <i class="fas fa-comment-dots"></i>
+            </div>
+
+            <div class="input-group">
+                <label>GitHub Username</label>
+                <input name="git" type="text" placeholder="e.g. octocat">
+                <i class="fab fa-github"></i>
+            </div>
+
+            <button type="submit" class="btn">
+                <i class="fas fa-magic" style="margin-right: 8px;"></i> Start Analysis
+            </button>
+
+        </form>
+    </div>
+
+    <script>
+        window.onpageshow = function(event) {
+            if (event.persisted) window.location.reload();
+        };
+    </script>
+
 </body>
 </html>
-
