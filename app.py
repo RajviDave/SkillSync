@@ -40,6 +40,11 @@ def home():
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
+
+    # NEW: If already logged in, redirect to dashboard immediately
+    if 'user_id' in session:
+        return redirect("/")
+    
     if request.method == "POST":
         name = request.form['name']
         email = request.form['email']
@@ -59,10 +64,20 @@ def signup():
             cur.close()
             conn.close()
 
+        return redirect("/login")
+
     return render_template("signup.html")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+
+    # NEW: If already logged in, redirect to dashboard immediately
+    if 'user_id' in session:
+        if session.get('role') == 'mentor':
+            return redirect("/mentor/dashboard")
+        else:
+            return redirect("/")
+        
     if request.method == "POST":
         email = request.form['email']
         password = request.form['password']
@@ -85,7 +100,7 @@ def login():
                 return redirect("/")
         else:
             return "Invalid Credentials"
-
+        
     return render_template("login.html")
 
 @app.route("/logout")
@@ -242,6 +257,17 @@ def submit_quiz():
                            quiz_percentage=quiz_percentage,
                            mentor_score=mentor_score,
                            score=score, total=total)
+
+@app.after_request
+def add_header(response):
+    """
+    Add headers to both force latest content in the browser
+    and to prevent the browser from caching the rendered page.
+    """
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, public, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 if __name__ == "__main__":
     app.run(debug=True)
