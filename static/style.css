@@ -1,134 +1,70 @@
 /* --- 1. VARIABLES --- */
 :root {
-    --primary: #5B8DEF;       /* Soft Blue */
-    --primary-dark: #4a7bc7;  /* Darker Blue for hover */
+    --primary: #4f46e5;       /* Indigo */
+    --primary-dark: #4338ca;  /* Darker Indigo */
     --secondary: #CDB4F6;     /* Lavender */
-    --bg-gradient: linear-gradient(135deg, #F4F8FF 0%, #E1EAF8 100%);
-    --accent: #1E2A38;        /* Deep Navy */
+    --bg-gradient: linear-gradient(135deg, #F8FAF0 0%, #E1EAF8 100%);
+    --bg-soft: #f8fafc;
+    --accent: #1e293b;        /* Deep Slate */
     --text-grey: #64748b;
     --white: #ffffff;
-    --shadow: 0 10px 40px rgba(30, 42, 56, 0.08);
-    --radius: 16px;
+    --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+    --radius: 24px;
 }
 
 /* --- 2. GLOBAL RESET --- */
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
 
 body {
-    /* Rich Gradient Background */
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    background: var(--bg-gradient); 
+    background: var(--bg-soft); 
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--accent);
+    padding: 20px;
 }
 
-/* --- 3. THE PREMIUM CARD --- */
-.login-card {
+/* --- 3. THE UI WRAPPER (Card-Behind-Card Effect) --- */
+.ui-wrapper {
+    position: relative;
+    width: 100%;
+    padding: 10px;
+    z-index: 1;
+}
+
+/* This creates the "Card Behind" visual depth */
+.ui-wrapper::before { 
+    content: ''; 
+    position: absolute; 
+    top: 15px; 
+    left: 15px; 
+    right: -5px; 
+    bottom: -5px;
+    background: var(--white); 
+    opacity: 0.4; 
+    border-radius: var(--radius); 
+    z-index: -1; 
+    transform: rotate(-1.5deg);
+    box-shadow: var(--shadow);
+}
+
+.main-card {
     background: var(--white);
-    padding: 3rem; /* More breathing room */
+    padding: 2.5rem;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     width: 100%;
-    max-width: 420px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
+    border: 1px solid #f1f5f9;
 }
 
-/* The Blue Top Bar */
-.login-card::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 6px;
-    background: linear-gradient(90deg, var(--primary), var(--secondary));
-}
-
-/* --- 4. BRANDING AREA --- */
-.brand-logo {
-    width: 60px;
-    height: 60px;
-    background: rgba(91, 141, 239, 0.1); /* Light transparent blue */
-    color: var(--primary);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px auto;
-    font-size: 24px;
-}
-
-h2 { font-weight: 700; margin-bottom: 0.5rem; color: var(--accent); }
-.subtitle { color: var(--text-grey); font-size: 0.95rem; margin-bottom: 2rem; }
-
-/* --- 5. INPUTS WITH ICONS --- */
+/* --- 4. INPUTS & LABELS --- */
 .input-group {
     position: relative;
     margin-bottom: 1.2rem;
+    text-align: left;
 }
 
-.input-group i {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #a0aec0;
-    transition: 0.3s;
-}
-
-.input-group input {
-    width: 100%;
-    padding: 14px 15px 14px 45px; /* Space for the icon */
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    font-size: 15px;
-    background: #f8fafc;
-    transition: all 0.3s ease;
-    outline: none;
-}
-
-.input-group input:focus {
-    border-color: var(--primary);
-    background: var(--white);
-    box-shadow: 0 0 0 4px rgba(91, 141, 239, 0.1);
-}
-
-.input-group input:focus + i { color: var(--primary); }
-
-/* --- 6. BUTTONS --- */
-.btn {
-    width: 100%;
-    padding: 14px;
-    background: var(--primary);
-    color: var(--white);
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.3s;
-    margin-top: 10px;
-}
-
-.btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(91, 141, 239, 0.3);
-}
-
-.links { margin-top: 1.5rem; font-size: 0.9rem; }
-.links a { color: var(--primary); font-weight: 600; text-decoration: none; }
-.links a:hover { text-decoration: underline; }
-
-/* For Mobile */
-@media (max-width: 480px) {
-    .login-card { padding: 2rem; width: 90%; }
-}
-
-/* Labels above inputs */
 .input-group label {
     display: block;
     margin-bottom: 8px;
@@ -137,152 +73,108 @@ h2 { font-weight: 700; margin-bottom: 0.5rem; color: var(--accent); }
     color: var(--accent);
 }
 
-.input-group i {
-    position: absolute;
-    left: 15px;
-    top: 48px; /* Adjusted for label height */
-    color: #a0aec0;
-    transition: 0.3s;
-    z-index: 2;
+.input-group label i {
+    color: var(--primary);
+    margin-right: 8px;
 }
 
-/* Inputs & Textareas */
 .input-group input, 
 .input-group textarea {
     width: 100%;
-    padding: 14px 15px 14px 45px; /* Space for icon */
+    padding: 12px 14px;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
-    font-size: 15px;
+    font-size: 14px;
     background: #f8fafc;
     transition: all 0.3s ease;
     outline: none;
     font-family: inherit;
 }
 
-.input-group textarea {
-    min-height: 100px; /* Make it taller by default */
-    resize: vertical;  /* Allow user to resize */
-}
-
-/* File Input Styling */
-.file-upload-wrapper {
-    position: relative;
-    border: 2px dashed #cbd5e1;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    background: #f8fafc;
-    transition: 0.3s;
-    margin-bottom: 1.5rem;
-}
-
-.file-upload-wrapper:hover {
-    border-color: var(--primary);
-    background: #f0f7ff;
-}
-
-.file-upload-wrapper input[type="file"] {
-    width: 100%;
-    cursor: pointer;
-}
-
-/* Focus States */
 .input-group input:focus, 
 .input-group textarea:focus {
     border-color: var(--primary);
     background: var(--white);
-    box-shadow: 0 0 0 4px rgba(91, 141, 239, 0.1);
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
 }
 
-.input-group input:focus + i,
-.input-group textarea:focus + i { 
-    color: var(--primary); 
-}
-
-/* --- QUIZ SPECIFIC STYLES --- */
-
-/* The Progress Bar */
+/* --- 5. QUIZ SPECIFIC STYLES --- */
 .progress-container {
-    background: #e2e8f0;
-    border-radius: 10px;
+    background: #f1f5f9;
     height: 8px;
-    width: 100%;
-    margin-bottom: 30px;
+    border-radius: 10px;
+    margin: 20px 0 30px;
     overflow: hidden;
 }
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary), var(--secondary));
-    width: 0%; /* JS will change this */
-    transition: width 0.3s ease;
+    background: var(--primary);
+    width: 0%; 
+    transition: width 0.4s ease;
 }
 
-/* The Question Card */
-.question-step {
-    display: none; /* Hide all by default */
-    animation: fadeIn 0.4s ease;
-}
-
-.question-step.active {
-    display: block; /* Only show the active one */
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Big Clickable Options */
 .options-grid {
     display: grid;
+    grid-template-columns: 1fr 1fr; /* Two columns for quiz options */
     gap: 15px;
-    margin: 20px 0;
+    margin-top: 25px;
 }
 
-.option-label {
-    display: block;
-    cursor: pointer;
-    position: relative;
-}
+.option-label { cursor: pointer; position: relative; }
+.option-label input { position: absolute; opacity: 0; }
 
-/* Hide the ugly radio circle */
-.option-label input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-}
-
-/* The visible card design */
-.option-card {
+.option-card { 
+    padding: 16px; 
+    border: 2px solid #e2e8f0; 
+    border-radius: 14px; 
+    transition: all 0.2s; 
+    font-size: 14px; 
+    font-weight: 500;
+    background: var(--white);
     display: flex;
     align-items: center;
-    padding: 15px 20px;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    background: var(--white);
-    transition: all 0.2s ease;
-    font-weight: 500;
-    color: var(--accent);
 }
 
-/* Hover Effect */
-.option-label:hover .option-card {
-    border-color: var(--primary);
-    background: #f8fafc;
+.option-label input:checked ~ .option-card { 
+    border-color: var(--primary); 
+    background: rgba(79, 70, 229, 0.05); 
+    color: var(--primary);
 }
 
-/* Selected State (The Blue Active Card) */
-.option-label input[type="radio"]:checked + .option-card {
+/* --- 6. BUTTONS & BADGES --- */
+.btn {
+    padding: 12px 24px;
     background: var(--primary);
     color: var(--white);
-    border-color: var(--primary);
-    box-shadow: 0 4px 12px rgba(91, 141, 239, 0.3);
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* Navigation Buttons */
-.quiz-nav {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 30px;
+.btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(79, 70, 229, 0.2);
+}
+
+.timer-badge {
+    background: #fff1f2;
+    color: #e11d48;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 800;
+    border: 1px solid #fecdd3;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+    .options-grid { grid-template-columns: 1fr; }
+    .main-card { padding: 1.5rem; }
 }

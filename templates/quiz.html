@@ -3,20 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skill Assessment</title>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Skill Assessment | SkillSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #4f46e5; --bg: #f8fafc; --text-main: #1e293b; }
+        body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text-main); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+
+        /* Card Behind Card Effect */
+        .ui-wrapper { position: relative; width: 100%; max-width: 750px; }
+        .ui-wrapper::before { 
+            content: ''; position: absolute; top: 15px; left: 15px; right: -5px; bottom: -5px;
+            background: white; opacity: 0.4; border-radius: 24px; z-index: -1; transform: rotate(-1deg);
+        }
+
+        .main-card { 
+            background: white; border-radius: 24px; padding: 40px; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08); border: 1px solid #f1f5f9;
+        }
+
+        .progress-container { background: #f1f5f9; height: 8px; border-radius: 10px; margin: 20px 0 30px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.4s ease; }
+
+        .question-step { display: none; }
+        .question-step.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
+        .option-label { cursor: pointer; position: relative; }
+        .option-label input { position: absolute; opacity: 0; cursor: pointer; }
+        
+        .option-card { 
+            padding: 16px; border: 2px solid #e2e8f0; border-radius: 14px; 
+            transition: all 0.2s; font-size: 14px; font-weight: 500;
+        }
+        .option-label input:checked ~ .option-card { 
+            border-color: var(--primary); background: rgba(79, 70, 229, 0.05); color: var(--primary);
+        }
+
+        .quiz-nav { display: flex; justify-content: space-between; margin-top: 40px; align-items: center; }
+        .btn { 
+            padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; transition: 0.2s; 
+            display: flex; align-items: center; gap: 8px; font-size: 15px;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: #f1f5f9; color: #64748b; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+        .timer-badge { background: #fff1f2; color: #e11d48; padding: 8px 16px; border-radius: 10px; font-weight: 800; border: 1px solid #fecdd3; }
+    </style>
 </head>
 <body>
 
-    <div class="center-screen">
-        <div class="card" style="max-width: 700px; text-align: left;">
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h2 style="margin:0;">Skill Assessment</h2>
-                <span id="question-tracker" style="color: var(--primary); font-weight: bold;">1 / {{ questions|length }}</span>
+    <div class="ui-wrapper">
+        <div class="main-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="margin: 0; font-weight: 800;">Skill Assessment</h2>
+                    <p style="color: #64748b; font-size: 14px; margin: 5px 0 0;">Question <span id="question-tracker">1 / {{ questions|length }}</span></p>
+                </div>
+                <div class="timer-badge">
+                    <i class="fas fa-clock"></i> <span id="timer-display">60</span>s
+                </div>
             </div>
 
             <div class="progress-container">
@@ -24,166 +72,156 @@
             </div>
 
             <form id="quizForm" action="/quiz/submit" method="POST">
-                
                 {% for q in questions %}
                 <div class="question-step {% if loop.first %}active{% endif %}" data-index="{{ loop.index }}">
-                    
-                    <h3 style="font-size: 1.2rem; margin-bottom: 20px;">
-                        <span style="color:var(--text-grey); margin-right:8px;">Q{{ loop.index }}.</span> 
+                    <h3 style="font-size: 1.3rem; line-height: 1.5; margin-bottom: 25px;">
                         {{ q.question }}
                     </h3>
 
                     <div class="options-grid">
+                        {% for opt in ['A', 'B', 'C', 'D'] %}
                         <label class="option-label">
-                            <input type="radio" name="answers[{{ q.id }}]" value="A" required>
+                            <input type="radio" name="answers[{{ q.id }}]" value="{{ opt }}" required>
                             <div class="option-card">
-                                <span style="margin-right: 10px; font-weight: bold;">A.</span> {{ q.optionA }}
+                                <span style="opacity: 0.5; margin-right: 8px;">{{ opt }}.</span> 
+                                {{ q['option' ~ opt] }}
                             </div>
                         </label>
-
-                        <label class="option-label">
-                            <input type="radio" name="answers[{{ q.id }}]" value="B">
-                            <div class="option-card">
-                                <span style="margin-right: 10px; font-weight: bold;">B.</span> {{ q.optionB }}
-                            </div>
-                        </label>
-
-                        <label class="option-label">
-                            <input type="radio" name="answers[{{ q.id }}]" value="C">
-                            <div class="option-card">
-                                <span style="margin-right: 10px; font-weight: bold;">C.</span> {{ q.optionC }}
-                            </div>
-                        </label>
-
-                        <label class="option-label">
-                            <input type="radio" name="answers[{{ q.id }}]" value="D">
-                            <div class="option-card">
-                                <span style="margin-right: 10px; font-weight: bold;">D.</span> {{ q.optionD }}
-                            </div>
-                        </label>
+                        {% endfor %}
                     </div>
-                        <div class="correct-answer-box" id="answer-box-{{ loop.index }}" style="display: none; margin-top: 15px; padding: 10px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; color: #155724;">
-                            <strong>Correct Answer: </strong>
-                            {% if q.correct_option == 'A' %} {{ q.optionA }}
-                            {% elif q.correct_option == 'B' %} {{ q.optionB }}
-                            {% elif q.correct_option == 'C' %} {{ q.optionC }}
-                            {% elif q.correct_option == 'D' %} {{ q.optionD }}
-                            {% endif %}
-                        </div>
+
+                    <div class="correct-answer-box" id="answer-box-{{ loop.index }}" style="display: none; margin-top: 20px; padding: 15px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; color: #166534; font-size: 14px;">
+                        <i class="fas fa-check-circle"></i> <strong>Key Explanation:</strong> 
+                        {% set correct = q.correct_option %}
+                        {{ q['option' ~ correct] }}
+                    </div>
                 </div>
                 {% endfor %}
 
                 <div class="quiz-nav">
-                    <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeQuestion(-1)" style="width: auto; visibility: hidden;">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeQuestion(-1)" style="visibility: hidden;">
                         <i class="fas fa-arrow-left"></i> Previous
                     </button>
 
-                    <button type="button" class="btn" id="nextBtn" onclick="changeQuestion(1)" style="width: auto;">
-                        Next Question <i class="fas fa-arrow-right"></i>
-                    </button>
-
-                    <button type="submit" class="btn" id="submitBtn" style="width: auto; display: none; background-color: #2ecc71;">
-                        Submit Quiz <i class="fas fa-check"></i>
-                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeQuestion(1)">
+                            Next Question <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button type="submit" class="btn" id="submitBtn" style="display: none; background: #10b981; color: white;">
+                            Submit Final Results <i class="fas fa-check-double"></i>
+                        </button>
+                    </div>
                 </div>
             </form>
-            <div class="timer-container" style="text-align: right; margin-bottom: 10px; font-weight: bold; color: #e53e3e;">
-            <i class="fas fa-clock"></i> Time Left: <span id="timer-display">60</span>s
-        </div>
         </div>
     </div>
 
     <script>
-        let currentStep = 1;
-        let timeLeft = 60; // Seconds per question
-        let timerInterval;
-        const totalSteps = {{ questions|length }};
+        
+    let currentStep = 1;
+    let timeLeft = 60;
+    let timerInterval;
+    const totalSteps = {{ questions|length }};
+    const quizForm = document.getElementById('quizForm');
 
-        function startTimer() {
-            // Clear any existing timer first
-            clearInterval(timerInterval);
-            timeLeft = 60;
+    function startTimer() {
+        clearInterval(timerInterval);
+        timeLeft = 60;
+        document.getElementById('timer-display').innerText = timeLeft;
+        timerInterval = setInterval(() => {
+            timeLeft--;
             document.getElementById('timer-display').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                handleTimeUp();
+            }
+        }, 1000);
+    }
 
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('timer-display').innerText = timeLeft;
-
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    handleTimeUp();
-                }
-            }, 1000);
+    function handleTimeUp() {
+        if (currentStep < totalSteps) {
+            alert("Time is up! Moving to the next question.");
+            changeQuestion(1, true); 
+        } else {
+            // If time up on last question, submit automatically
+            quizForm.submit();
         }
-        
-           function updateProgress() {
-            // Update Bar Width
-            const percentage = ((currentStep) / totalSteps) * 100;
-            document.getElementById('progress-bar').style.width = percentage + '%';
+    }
+
+    function updateProgress() {
+        const percentage = (currentStep / totalSteps) * 100;
+        document.getElementById('progress-bar').style.width = percentage + '%';
+        document.getElementById('question-tracker').innerText = currentStep + " / " + totalSteps;
+    }
+
+    function changeQuestion(direction, forced = false) {
+        const currentQ = document.querySelector(`.question-step[data-index="${currentStep}"]`);
+        const currentInputs = currentQ.querySelectorAll('input[type="radio"]');
+        const answerBox = document.getElementById(`answer-box-${currentStep}`);
+
+        // VALIDATION: Only check answers if moving forward (direction 1)
+        if (direction === 1 && !forced) {
+            let answered = false;
+            currentInputs.forEach(input => { if(input.checked) answered = true; });
             
-            // Update Text (e.g., "5 / 15")
-            document.getElementById('question-tracker').innerText = currentStep + " / " + totalSteps;
-        }
-
-        function changeQuestion(direction) {
-            // Validation: Prevent going Next if no option selected
-            if (direction === 1) {
-                const currentInputs = document.querySelectorAll(`.question-step[data-index="${currentStep}"] input[type="radio"]`);
-                let answered = false;
-                currentInputs.forEach(input => { if(input.checked) answered = true; });
-                
-                if (!answered) {
-                    alert("Please select an answer before moving forward.");
-                    return;
-                }
-
-                startTimer();
-
-                const answerBox = document.getElementById(`answer-box-${currentStep}`);
-                document.getElementById('nextBtn').innerText = "Next Question";
-        
-                // If the answer is HIDDEN, show it and STOP (don't go to next question yet)
-                if (answerBox && answerBox.style.display === 'none') {
-                    answerBox.style.display = 'block';
-                    currentInputs.forEach(input => {
-                    input.disabled = true;
-                     });
-                    return; 
-                }
+            if (!answered) {
+                alert("Please select an answer.");
+                return;
             }
 
-            // Hide Current
-            document.querySelector(`.question-step[data-index="${currentStep}"]`).classList.remove('active');
-            
-            // Update Index
-            currentStep += direction;
-            
-            // Show New
-            document.querySelector(`.question-step[data-index="${currentStep}"]`).classList.add('active');
+            // SHOW EXPLANATION: If it's hidden, show it and stop the function
+            if (answerBox && answerBox.style.display === 'none') {
+                answerBox.style.display = 'block';
+                currentInputs.forEach(i => i.disabled = true);
+                
+                // If it's the last question, we don't change text to "Next", we just show answer
+                if (currentStep === totalSteps) {
+                    document.getElementById('submitBtn').style.display = 'flex';
+                } else {
+                    document.getElementById('nextBtn').innerHTML = 'Got it, Next <i class="fas fa-arrow-right"></i>';
+                }
+                return; 
+            }
+        }
 
-            // Handle Buttons
-            document.getElementById('prevBtn').style.visibility = (currentStep === 1) ? 'hidden' : 'visible';
+        // MOVE TO NEW QUESTION
+        currentQ.classList.remove('active');
+        currentStep += direction;
+        
+        const nextQ = document.querySelector(`.question-step[data-index="${currentStep}"]`);
+        if (nextQ) {
+            nextQ.classList.add('active');
             
+            // Toggle Nav Buttons
+            document.getElementById('prevBtn').style.visibility = (currentStep === 1) ? 'hidden' : 'visible';
+            document.getElementById('nextBtn').innerHTML = 'Next Question <i class="fas fa-arrow-right"></i>';
+
             if (currentStep === totalSteps) {
                 document.getElementById('nextBtn').style.display = 'none';
-                document.getElementById('submitBtn').style.display = 'inline-block';
+                document.getElementById('submitBtn').style.display = 'flex';
             } else {
-                document.getElementById('nextBtn').style.display = 'inline-block';
+                document.getElementById('nextBtn').style.display = 'flex';
                 document.getElementById('submitBtn').style.display = 'none';
             }
 
             updateProgress();
+            startTimer();
         }
+    }
 
-        window.onload = startTimer;
+    // FINAL SUBMIT FIX: Handle the form submission properly
+    quizForm.onsubmit = function(e) {
+        // Ensure disabled inputs are re-enabled so their data is sent to Flask
+        const disabledInputs = quizForm.querySelectorAll('input:disabled');
+        disabledInputs.forEach(input => input.disabled = false);
+        return true; // Allow the form to submit
+    };
 
-        // Initialize Progress Bar
+    window.onload = () => {
+        startTimer();
         updateProgress();
-
-        // Prevent Back Button
-        window.onpageshow = function(event) {
-            if (event.persisted) window.location.reload();
-        };
-    </script>
+    };
+</script>
+    
 </body>
 </html>

@@ -77,12 +77,14 @@ def signup():
         password = request.form['password']
         role = request.form['role'] # 'student' or 'mentor'
 
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+
         conn = get_db_connection()
         cur = conn.cursor()
         try:
-            hashed_pw = generate_password_hash(password) # Turns "123" into "pbkdf2:sha256:..."
+            
             cur.execute("INSERT INTO users (name, email, password, role) VALUES (%s, %s, %s, %s)", 
-            (name, email, hashed_pw, role))
+            (name, email, hashed_password, role))
             conn.commit()
             return redirect("/login")
         except Exception as e:

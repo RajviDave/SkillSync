@@ -2,118 +2,174 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assessment Setup - SkillSync</title>
-    
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    
+    <title>Dashboard | SkillSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .assessment-card {
-            background: var(--white);
-            padding: 3rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            width: 100%;
-            max-width: 600px; /* Wider than login card */
-            position: relative;
-            overflow: hidden;
-            margin: 20px; /* Space on mobile */
+        :root { --primary: #4f46e5; --bg: #f8fafc; }
+        body { 
+            background: var(--bg); 
+            font-family: 'Inter', sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px;
         }
-        /* Top Bar Accent */
-        .assessment-card::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 6px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        
+        /* The "Card Behind" effect you liked */
+        .ui-wrapper { 
+            position: relative; 
+            width: 100%; 
+            max-width: 480px; /* Vertically rectangular width */
+            padding: 10px; 
+        }
+        .ui-wrapper::before { 
+            content: ''; 
+            position: absolute; 
+            top: 15px; 
+            left: 15px; 
+            right: -5px; 
+            bottom: -5px;
+            background: white; 
+            opacity: 0.4; 
+            border-radius: 24px; 
+            z-index: -1; 
+            transform: rotate(-1.5deg);
         }
 
-        .spinner {
-            width: 50px; height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #6366f1;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+        .main-card { 
+            background: white; 
+            border-radius: 24px; 
+            padding: 35px; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08); 
+            border: 1px solid #f1f5f9;
+        }
+
+        .input-group { margin-bottom: 18px; }
+        .input-group label { 
+            display: block; 
+            font-weight: 600; 
+            font-size: 14px; 
+            margin-bottom: 8px; 
+            color: #334155; 
+        }
+        .input-group label i { color: var(--primary); margin-right: 8px; width: 16px; }
+
+        input, textarea { 
+            width: 100%; 
+            padding: 12px 14px; 
+            border: 1.5px solid #e2e8f0; 
+            border-radius: 12px;
+            font-family: inherit; 
+            font-size: 14px; 
+            transition: all 0.2s; 
+            box-sizing: border-box;
+        }
+        input:focus, textarea:focus { 
+            outline: none; 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); 
+        }
+
+        button { 
+            background: var(--primary); 
+            color: white; 
+            width: 100%; 
+            border: none; 
+            padding: 16px;
+            border-radius: 14px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            font-size: 16px; 
+            transition: all 0.2s; 
+            margin-top: 10px;
+        }
+        button:hover { background: #4338ca; transform: translateY(-2px); }
+
+        /* LOADER OVERLAY with card effect */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(248, 250, 252, 0.95); z-index: 9999; 
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        .modern-spinner {
+            width: 60px; height: 60px; border: 6px solid #f3f3f3;
+            border-top: 6px solid var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto 20px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div class="assessment-card">
-        
-        <div style="text-align: center; margin-bottom: 30px;">
-            <div class="brand-logo">
-                <i class="fas fa-rocket"></i>
-            </div>
-            <h2>New Assessment</h2>
-            <p class="subtitle">Fill in the details to generate your quiz</p>
-        </div>
-
-        <form method="POST" action="/analyze" enctype="multipart/form-data">
+    <div class="ui-wrapper" id="form-container">
+        <div class="main-card">
+            <h2 style="margin: 0 0 8px 0;">Hello, {{ user_name }}! 👋</h2>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 25px;">Provide details to begin AI-driven analysis.</p>
             
-            <div class="input-group">
-                <label>Job Description (JD)</label>
-                <textarea name="jd" placeholder="Paste the full job description here..." required></textarea>
-                <i class="fas fa-briefcase"></i>
-            </div>
-
-            <label style="font-weight:600; font-size:0.9rem; color:var(--accent); display:block; margin-bottom:8px;">Upload Resume (PDF)</label>
-            <div class="file-upload-wrapper">
-                <input name="resume" type="file" accept="application/pdf" required>
-            </div>
-
-            <div class="input-group">
-                <label>Mentor's Feedback</label>
-                <textarea name="comments" placeholder="Any specific areas to focus on?" rows="2"></textarea>
-                <i class="fas fa-comment-dots"></i>
-            </div>
-
-            <div class="input-group">
-                <label>GitHub Username</label>
-                <input name="git" type="text" placeholder="e.g. octocat">
-                <i class="fab fa-github"></i>
-            </div>
-
-            <button type="submit" class="btn">
-                <i class="fas fa-magic" style="margin-right: 8px;"></i> Start Analysis
-            </button>
-
-        </form>
+            <form action="/analyze" method="POST" enctype="multipart/form-data">
+                <div class="input-group">
+                    <label><i class="fas fa-briefcase"></i> Job Description</label>
+                    <textarea name="jd" rows="3" required placeholder="Paste the job requirements..."></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-file-pdf"></i> Upload Resume (PDF)</label>
+                    <input type="file" name="resume" required accept=".pdf">
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fab fa-github"></i> GitHub Username</label>
+                    <input type="text" name="git" placeholder="e.g. your-username">
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-comment-alt"></i> Mentor Feedback</label>
+                    <textarea name="comments" rows="2" placeholder="Any specific notes from mentors?"></textarea>
+                </div>
+                
+                <button type="submit">Analyze Now</button>
+            </form>
+        </div>
     </div>
 
-        <div id="loading-overlay" style="display:none; text-align:center; padding: 50px;">
-        <div class="spinner"></div>
-        <h2 id="loading-text">Analyzing your profile...</h2>
-        <p>This may take a few seconds.</p>
+    <div id="loading-overlay">
+        <div class="ui-wrapper" style="max-width: 380px;">
+            <div class="main-card" style="text-align: center;">
+                <div class="modern-spinner"></div>
+                <h3 id="loading-text" style="color: var(--primary); margin: 0 0 10px 0;">Initializing AI...</h3>
+                <p style="color: #64748b; font-size: 14px;">Please wait while we process your profile.</p>
+                <div style="width: 100%; height: 8px; background: #eee; border-radius: 10px; margin-top: 20px; overflow: hidden;">
+                    <div id="progress-bar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.4s;"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        window.onpageshow = function(event) {
-            if (event.persisted) window.location.reload();
-        };
-    </script>
+        document.querySelector('form').addEventListener('submit', function() {
+            // Hide main form container and show loader
+            document.getElementById('form-container').style.display = 'none';
+            const overlay = document.getElementById('loading-overlay');
+            const progress = document.getElementById('progress-bar');
+            const text = document.getElementById('loading-text');
 
-    <script>
-    document.querySelector('form').onsubmit = function() {
-        // Hide the form
-        this.style.display = 'none';
-        // Show the loader
-        document.getElementById('loading-overlay').style.display = 'block';
-        
-        // Change text every 2 seconds to look "smart"
-        const phrases = ["Parsing Resume...", "Scanning GitHub Repos...", "Checking Domain Match..."];
-        let i = 0;
-        setInterval(() => {
-            document.getElementById('loading-text').innerText = phrases[i % phrases.length];
-            i++;
-        }, 2000);
-    };
-    </script>
+            overlay.style.display = 'flex';
 
+            const msgs = ["Reading PDF...", "Scanning GitHub...", "Calculating Scores...", "Finalizing..."];
+            let idx = 0;
+            
+            setInterval(() => {
+                if(idx < msgs.length) {
+                    text.innerText = msgs[idx];
+                    progress.style.width = ((idx + 1) * 25) + "%";
+                    idx++;
+                }
+            }, 2500);
+        });
+    </script>
 </body>
 </html>

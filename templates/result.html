@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assessment Result</title>
+    <title>Assessment Result | SkillSync</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root {
-            --primary: #4f46e5; /* Indigo */
-            --success: #10b981; /* Green */
+            --primary: #4f46e5;
+            --success: #10b981;
             --bg-color: #f3f4f6;
             --text-dark: #1f2937;
             --text-light: #6b7280;
@@ -20,152 +21,95 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 20px;
         }
 
         .dashboard-card {
             background: white;
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
+            margin: 0 auto;
             border-radius: 24px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.08);
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
             animation: slideUp 0.6s ease-out;
         }
 
-        /* --- Header Section --- */
         .header-section {
             background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
             color: white;
             padding: 40px;
             text-align: center;
-            position: relative;
         }
 
-        .header-section h1 {
-            margin: 0;
-            font-weight: 800;
-            font-size: 28px;
-            letter-spacing: -0.5px;
-        }
+        .header-section h1 { margin: 0; font-weight: 800; font-size: 28px; }
 
-        .header-section p {
-            opacity: 0.9;
-            margin-top: 10px;
-            font-size: 16px;
-        }
-
-        /* --- Score Circle --- */
         .score-container {
             position: relative;
-            margin-top: -30px; /* Pull up into header */
+            margin-top: -40px;
             margin-bottom: 20px;
             display: flex;
             justify-content: center;
         }
 
-        .circular-chart {
-            display: block;
-            margin: 0 auto;
-            max-width: 180px;
-            max-height: 180px;
-        }
-
-        .circle-bg {
-            fill: none;
-            stroke: #e5e7eb;
-            stroke-width: 2.5;
-        }
-
+        .circular-chart { max-width: 180px; }
+        .circle-bg { fill: none; stroke: #e5e7eb; stroke-width: 2.5; }
         .circle {
-            fill: white; /* Inner circle color */
+            fill: white;
             stroke: var(--success);
             stroke-width: 2.5;
             stroke-linecap: round;
-            /* Animation handles in JS */
             transition: stroke-dasharray 1.5s ease-out; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
-        .percentage {
-            fill: var(--text-dark);
-            font-family: 'Inter', sans-serif;
-            font-weight: bold;
-            font-size: 0.5em;
-            text-anchor: middle;
-        }
-        
-        .percentage-label {
-            fill: var(--text-light);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.15em;
-            text-anchor: middle;
-        }
+        .percentage { fill: var(--text-dark); font-weight: bold; font-size: 0.5em; text-anchor: middle; }
+        .percentage-label { fill: var(--text-light); font-size: 0.15em; text-anchor: middle; }
 
-        /* --- Stats Grid --- */
-        .breakdown-grid {
+        /* --- Content Layout --- */
+        .content-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
             padding: 20px 40px;
         }
 
-        .stat-card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            transition: transform 0.2s, box-shadow 0.2s;
+        .breakdown-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            border-color: var(--primary);
+        .stat-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
         .stat-icon {
-            width: 50px;
-            height: 50px;
+            width: 40px; height: 40px;
             background: #eef2ff;
             color: var(--primary);
-            border-radius: 50%;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 15px;
-            font-size: 20px;
         }
 
-        .stat-label {
-            font-size: 14px;
-            color: var(--text-light);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .stat-info { flex-grow: 1; }
+        .stat-label { font-size: 13px; color: var(--text-light); font-weight: 600; }
+        .stat-value { font-size: 18px; font-weight: 800; color: var(--text-dark); }
+
+        .chart-box {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 20px;
         }
 
-        .stat-value {
-            display: block;
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--text-dark);
-            margin-top: 5px;
-        }
-
-        .stat-sub {
-            font-size: 12px;
-            color: var(--text-light);
-        }
-
-        /* --- Buttons --- */
         .action-buttons {
             padding: 30px 40px;
             display: flex;
@@ -180,38 +124,22 @@
             border-radius: 12px;
             font-weight: 600;
             text-decoration: none;
-            transition: all 0.2s;
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            transition: all 0.2s;
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: white; color: var(--text-dark); border: 1px solid #d1d5db; }
 
-        .btn-primary:hover {
-            background: #4338ca;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: white;
-            color: var(--text-dark);
-            border: 1px solid #d1d5db;
-        }
-
-        .btn-secondary:hover {
-            background: #f3f4f6;
-            color: black;
-        }
-
-        /* Animation Keyframes */
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .content-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -220,92 +148,100 @@
     <div class="dashboard-card">
         <div class="header-section">
             <h1>Assessment Complete</h1>
-            <p>Here is your comprehensive performance report</p>
+            <p>Your AI-driven suitability profile is ready</p>
         </div>
 
         <div class="score-container">
             <svg viewBox="0 0 36 36" class="circular-chart">
-                <path class="circle-bg"
-                  d="M18 2.0845
-                     a 15.9155 15.9155 0 0 1 0 31.831
-                     a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-                <path class="circle" id="score-ring"
-                  stroke-dasharray="0, 100"
-                  d="M18 2.0845
-                     a 15.9155 15.9155 0 0 1 0 31.831
-                     a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
+                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path class="circle" id="score-ring" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                 <text x="18" y="20.35" class="percentage">{{ final_score }}%</text>
                 <text x="18" y="25" class="percentage-label">SUITABILITY</text>
             </svg>
         </div>
 
-        <div class="breakdown-grid">
-            
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-file-alt"></i>
+        <div class="content-grid">
+            <div class="breakdown-list">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-label">Resume Match</div>
+                        <div class="stat-value">{{ resume_score }}%</div>
+                    </div>
                 </div>
-                <div class="stat-label">Resume Match</div>
-                <div class="stat-value">{{ resume_score }}%</div>
-                <div class="stat-sub">Weight: 30%</div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-brain"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-label">Quiz Accuracy</div>
+                        <div class="stat-value">{{ quiz_percentage }}%</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-label">Mentor Sentiment</div>
+                        <div class="stat-value">{{ mentor_score }}%</div>
+                    </div>
+                </div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-user-tie"></i>
-                </div>
-                <div class="stat-label">Mentor Review</div>
-                <div class="stat-value">{{ mentor_score }}%</div>
-                <div class="stat-sub">Weight: 20%</div>
+            <div class="chart-box">
+                <h4 style="margin-top: 0; text-align: center; font-size: 14px; color: var(--text-light);">COMPETENCY MAPPING</h4>
+                <canvas id="skillRadarChart"></canvas>
             </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-brain"></i>
-                </div>
-                <div class="stat-label">Quiz Score</div>
-                <div class="stat-value" style="color: var(--primary);">{{ quiz_percentage }}%</div>
-                <div class="stat-sub">{{ score }} out of {{ total }} Correct</div>
-            </div>
-
-            
-
         </div>
 
         <div class="action-buttons">
-            <a href="/" class="btn btn-secondary">
-                <i class="fas fa-home"></i> Home
-            </a>
-            <a href="/reset" class="btn btn-primary">
-                <i class="fas fa-redo"></i> Start New Assessment
-            </a>
+            <a href="/" class="btn btn-secondary"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="/reset" class="btn btn-primary"><i class="fas fa-redo"></i> Retake Assessment</a>
         </div>
     </div>
 
+    
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Get the score from Flask
-            const score = {{ final_score }};
-            
-            // Animate the Ring
+            // Data Cleaning
+            const finalScore = Number("{{ final_score }}");
+            const resScore = Number("{{ resume_score }}");
+            const qzScore = Number("{{ quiz_percentage }}");
+            const mntScore = Number("{{ mentor_score }}");
+
+            // 1. Animate the Ring
             const circle = document.getElementById('score-ring');
-            
-            // SVG dasharray format: "current_value, max_value"
-            // We animate from "0, 100" to "score, 100"
             setTimeout(() => {
-                circle.style.strokeDasharray = `${score}, 100`;
-                
-                // Color Logic based on score
-                if(score < 50) {
-                    circle.style.stroke = "#ef4444"; // Red
-                } else if(score < 75) {
-                    circle.style.stroke = "#f59e0b"; // Orange/Yellow
-                } else {
-                    circle.style.stroke = "#10b981"; // Green
+                circle.style.strokeDasharray = `${finalScore}, 100`;
+                if(finalScore < 50) circle.style.stroke = "#ef4444";
+                else if(finalScore < 75) circle.style.stroke = "#f59e0b";
+                else circle.style.stroke = "#10b981";
+            }, 300);
+
+            // 2. Skill Radar Chart
+            const ctx = document.getElementById('skillRadarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Resume', 'Quiz', 'Mentor'],
+                    datasets: [{
+                        label: 'Scores',
+                        data: [resScore, qzScore, mntScore],
+                        backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                        borderColor: '#4f46e5',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#4f46e5'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
                 }
-            }, 300); // Small delay for smooth entry
+            });
         });
     </script>
 </body>
