@@ -1,54 +1,310 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Final Assessment Result</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Result</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f9; }
-        .result-box {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 600px;
-            margin: 0 auto;
+        :root {
+            --primary: #4f46e5; /* Indigo */
+            --success: #10b981; /* Green */
+            --bg-color: #f3f4f6;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
         }
-        h1 { color: #333; }
-        .big-score { font-size: 4em; font-weight: bold; color: #2ecc71; margin: 10px 0; }
-        .breakdown { text-align: left; margin-top: 30px; background: #fafafa; padding: 20px; border-radius: 8px; }
-        .item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
-        .item:last-child { border-bottom: none; font-weight: bold; font-size: 1.2em; margin-top: 10px; }
-        .btn { display: inline-block; padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .dashboard-card {
+            background: white;
+            width: 100%;
+            max-width: 800px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        /* --- Header Section --- */
+        .header-section {
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header-section h1 {
+            margin: 0;
+            font-weight: 800;
+            font-size: 28px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-section p {
+            opacity: 0.9;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        /* --- Score Circle --- */
+        .score-container {
+            position: relative;
+            margin-top: -30px; /* Pull up into header */
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .circular-chart {
+            display: block;
+            margin: 0 auto;
+            max-width: 180px;
+            max-height: 180px;
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: #e5e7eb;
+            stroke-width: 2.5;
+        }
+
+        .circle {
+            fill: white; /* Inner circle color */
+            stroke: var(--success);
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            /* Animation handles in JS */
+            transition: stroke-dasharray 1.5s ease-out; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .percentage {
+            fill: var(--text-dark);
+            font-family: 'Inter', sans-serif;
+            font-weight: bold;
+            font-size: 0.5em;
+            text-anchor: middle;
+        }
+        
+        .percentage-label {
+            fill: var(--text-light);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.15em;
+            text-anchor: middle;
+        }
+
+        /* --- Stats Grid --- */
+        .breakdown-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px 40px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            border-color: var(--primary);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: #eef2ff;
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 20px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-top: 5px;
+        }
+
+        .stat-sub {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* --- Buttons --- */
+        .action-buttons {
+            padding: 30px 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-dark);
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #f3f4f6;
+            color: black;
+        }
+
+        /* Animation Keyframes */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
-    <div class="result-box">
-        <h1>Assessment Complete</h1>
-        <p>Here is your final suitability score for the Job Profile.</p>
-
-        <div class="big-score">{{ final_score }}%</div>
-
-        <div class="breakdown">
-            <div class="item">
-                <span>Resume Match (30% Weight):</span>
-                <span>{{ resume_score }}%</span>
-            </div>
-            <div class="item">
-                <span>Mentor Comments (20% Weight):</span>
-                <span>{{ mentor_score }}%</span>
-            </div>
-            <div class="item">
-                <span>Quiz Performance (70% Weight):</span>
-                <span>{{ quiz_percentage }}% ({{ score }}/{{ total }})</span>
-            </div>
-            <div class="item">
-                <span>Final Suitability Score:</span>
-                <span>{{ final_score }} / 100</span>
-            </div>
+    <div class="dashboard-card">
+        <div class="header-section">
+            <h1>Assessment Complete</h1>
+            <p>Here is your comprehensive performance report</p>
         </div>
 
-        <a href="/" class="btn">Back to Home</a>
+        <div class="score-container">
+            <svg viewBox="0 0 36 36" class="circular-chart">
+                <path class="circle-bg"
+                  d="M18 2.0845
+                     a 15.9155 15.9155 0 0 1 0 31.831
+                     a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path class="circle" id="score-ring"
+                  stroke-dasharray="0, 100"
+                  d="M18 2.0845
+                     a 15.9155 15.9155 0 0 1 0 31.831
+                     a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <text x="18" y="20.35" class="percentage">{{ final_score }}%</text>
+                <text x="18" y="25" class="percentage-label">SUITABILITY</text>
+            </svg>
+        </div>
+
+        <div class="breakdown-grid">
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-label">Resume Match</div>
+                <div class="stat-value">{{ resume_score }}%</div>
+                <div class="stat-sub">Weight: 30%</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-label">Mentor Review</div>
+                <div class="stat-value">{{ mentor_score }}%</div>
+                <div class="stat-sub">Weight: 20%</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="stat-label">Quiz Score</div>
+                <div class="stat-value" style="color: var(--primary);">{{ quiz_percentage }}%</div>
+                <div class="stat-sub">{{ score }} out of {{ total }} Correct</div>
+            </div>
+
+        </div>
+
+        <div class="action-buttons">
+            <a href="/" class="btn btn-secondary">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a href="/reset" class="btn btn-primary">
+                <i class="fas fa-redo"></i> Start New Assessment
+            </a>
+        </div>
     </div>
-<a href="/reset" class="btn">Start New Assessment</a>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Get the score from Flask
+            const score = {{ final_score }};
+            
+            // Animate the Ring
+            const circle = document.getElementById('score-ring');
+            
+            // SVG dasharray format: "current_value, max_value"
+            // We animate from "0, 100" to "score, 100"
+            setTimeout(() => {
+                circle.style.strokeDasharray = `${score}, 100`;
+                
+                // Color Logic based on score
+                if(score < 50) {
+                    circle.style.stroke = "#ef4444"; // Red
+                } else if(score < 75) {
+                    circle.style.stroke = "#f59e0b"; // Orange/Yellow
+                } else {
+                    circle.style.stroke = "#10b981"; // Green
+                }
+            }, 300); // Small delay for smooth entry
+        });
+    </script>
 </body>
 </html>
