@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mentor Dashboard</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Mentor Dashboard</h1>
+    <a href="/logout">Logout</a>
+    <br><br>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Target Domain</th>
+                <th>Resume Score (30%)</th>
+                <th>Quiz Score (50%)</th>
+                <th>Mentor Score (20%)</th>
+                <th>Final Suitability</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ student.name }}</td>
+                <td>{{ student.job_domain }}</td>
+                <td>{{ student.resume_score }}</td>
+                <td>{{ student.quiz_score }}</td>
+                <td>{{ student.mentor_score }}</td>
+                <td><strong>{{ student.final_score }}%</strong></td>
+                <td>{{ student.date_added }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7">No assessments found yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
