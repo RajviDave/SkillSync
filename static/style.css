@@ -173,6 +173,17 @@ body {
     border: 1px solid #fecdd3;
 }
 
+.ui-wrapper {
+    max-width: 420px; /* This is the magic number for vertical forms */
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.input-group input {
+    width: 100%;
+    box-sizing: border-box; /* Prevents inputs from leaking out of the card */
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 600px) {
     .options-grid { grid-template-columns: 1fr; }
