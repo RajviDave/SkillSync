@@ -3,6 +3,7 @@ import os
 from werkzeug.utils import secure_filename
 import mysql.connector
 import random
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Import your custom modules
 from resume import resume
@@ -79,8 +80,9 @@ def signup():
         conn = get_db_connection()
         cur = conn.cursor()
         try:
+            hashed_pw = generate_password_hash(password) # Turns "123" into "pbkdf2:sha256:..."
             cur.execute("INSERT INTO users (name, email, password, role) VALUES (%s, %s, %s, %s)", 
-                        (name, email, password, role))
+            (name, email, hashed_pw, role))
             conn.commit()
             return redirect("/login")
         except Exception as e:
@@ -109,12 +111,12 @@ def login():
 
         conn = get_db_connection()
         cur = conn.cursor(dictionary=True)
-        cur.execute("SELECT * FROM users WHERE email=%s AND password=%s", (email, password))
+        cur.execute("SELECT * FROM users WHERE email=%s", (email,))
         user = cur.fetchone()
         cur.close()
         conn.close()
 
-        if user:
+        if user and check_password_hash(user['password'], password):
             session['user_id'] = user['id']
             session['user_name'] = user['name']
             session['role'] = user['role']

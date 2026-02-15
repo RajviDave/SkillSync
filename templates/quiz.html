@@ -86,18 +86,37 @@
                         Submit Quiz <i class="fas fa-check"></i>
                     </button>
                 </div>
-
-                
-
             </form>
+            <div class="timer-container" style="text-align: right; margin-bottom: 10px; font-weight: bold; color: #e53e3e;">
+            <i class="fas fa-clock"></i> Time Left: <span id="timer-display">60</span>s
+        </div>
         </div>
     </div>
 
     <script>
         let currentStep = 1;
+        let timeLeft = 60; // Seconds per question
+        let timerInterval;
         const totalSteps = {{ questions|length }};
+
+        function startTimer() {
+            // Clear any existing timer first
+            clearInterval(timerInterval);
+            timeLeft = 60;
+            document.getElementById('timer-display').innerText = timeLeft;
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeUp();
+                }
+            }, 1000);
+        }
         
-        function updateProgress() {
+           function updateProgress() {
             // Update Bar Width
             const percentage = ((currentStep) / totalSteps) * 100;
             document.getElementById('progress-bar').style.width = percentage + '%';
@@ -118,7 +137,10 @@
                     return;
                 }
 
+                startTimer();
+
                 const answerBox = document.getElementById(`answer-box-${currentStep}`);
+                document.getElementById('nextBtn').innerText = "Next Question";
         
                 // If the answer is HIDDEN, show it and STOP (don't go to next question yet)
                 if (answerBox && answerBox.style.display === 'none') {
@@ -152,6 +174,8 @@
 
             updateProgress();
         }
+
+        window.onload = startTimer;
 
         // Initialize Progress Bar
         updateProgress();
