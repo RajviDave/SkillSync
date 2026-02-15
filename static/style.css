@@ -199,3 +199,90 @@ h2 { font-weight: 700; margin-bottom: 0.5rem; color: var(--accent); }
 .input-group textarea:focus + i { 
     color: var(--primary); 
 }
+
+/* --- QUIZ SPECIFIC STYLES --- */
+
+/* The Progress Bar */
+.progress-container {
+    background: #e2e8f0;
+    border-radius: 10px;
+    height: 8px;
+    width: 100%;
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    width: 0%; /* JS will change this */
+    transition: width 0.3s ease;
+}
+
+/* The Question Card */
+.question-step {
+    display: none; /* Hide all by default */
+    animation: fadeIn 0.4s ease;
+}
+
+.question-step.active {
+    display: block; /* Only show the active one */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Big Clickable Options */
+.options-grid {
+    display: grid;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.option-label {
+    display: block;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Hide the ugly radio circle */
+.option-label input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+/* The visible card design */
+.option-card {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: var(--white);
+    transition: all 0.2s ease;
+    font-weight: 500;
+    color: var(--accent);
+}
+
+/* Hover Effect */
+.option-label:hover .option-card {
+    border-color: var(--primary);
+    background: #f8fafc;
+}
+
+/* Selected State (The Blue Active Card) */
+.option-label input[type="radio"]:checked + .option-card {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(91, 141, 239, 0.3);
+}
+
+/* Navigation Buttons */
+.quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}

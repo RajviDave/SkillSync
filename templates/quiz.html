@@ -1,49 +1,144 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Quiz</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Assessment</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<form method="post" action="/quiz/submit">
+    <div class="center-screen">
+        <div class="card" style="max-width: 700px; text-align: left;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2 style="margin:0;">Skill Assessment</h2>
+                <span id="question-tracker" style="color: var(--primary); font-weight: bold;">1 / {{ questions|length }}</span>
+            </div>
 
-{% for q in questions %}
+            <div class="progress-container">
+                <div class="progress-fill" id="progress-bar"></div>
+            </div>
 
-    <p><b>{{ q.quistion }}</b></p>
+            <form id="quizForm" action="/quiz/submit" method="POST">
+                
+                {% for q in questions %}
+                <div class="question-step {% if loop.first %}active{% endif %}" data-index="{{ loop.index }}">
+                    
+                    <h3 style="font-size: 1.2rem; margin-bottom: 20px;">
+                        <span style="color:var(--text-grey); margin-right:8px;">Q{{ loop.index }}.</span> 
+                        {{ q.question }}
+                    </h3>
 
-    <label>
-        <input type="radio" name="answers[{{ q.id }}]" value="A">
-        {{ q.optionA }}
-    </label><br>
+                    <div class="options-grid">
+                        <label class="option-label">
+                            <input type="radio" name="answers[{{ q.id }}]" value="A" required>
+                            <div class="option-card">
+                                <span style="margin-right: 10px; font-weight: bold;">A.</span> {{ q.optionA }}
+                            </div>
+                        </label>
 
-    <label>
-        <input type="radio" name="answers[{{ q.id }}]" value="B">
-        {{ q.optionB }}
-    </label><br>
+                        <label class="option-label">
+                            <input type="radio" name="answers[{{ q.id }}]" value="B">
+                            <div class="option-card">
+                                <span style="margin-right: 10px; font-weight: bold;">B.</span> {{ q.optionB }}
+                            </div>
+                        </label>
 
-    <label>
-        <input type="radio" name="answers[{{ q.id }}]" value="C">
-        {{ q.optionC }}
-    </label><br>
+                        <label class="option-label">
+                            <input type="radio" name="answers[{{ q.id }}]" value="C">
+                            <div class="option-card">
+                                <span style="margin-right: 10px; font-weight: bold;">C.</span> {{ q.optionC }}
+                            </div>
+                        </label>
 
-    <label>
-        <input type="radio" name="answers[{{ q.id }}]" value="D">
-        {{ q.optionD }}
-    </label><br><br>
+                        <label class="option-label">
+                            <input type="radio" name="answers[{{ q.id }}]" value="D">
+                            <div class="option-card">
+                                <span style="margin-right: 10px; font-weight: bold;">D.</span> {{ q.optionD }}
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                {% endfor %}
 
-{% endfor %}
+                <div class="quiz-nav">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeQuestion(-1)" style="width: auto; visibility: hidden;">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
 
-<button type="submit">Submit Quiz</button>
+                    <button type="button" class="btn" id="nextBtn" onclick="changeQuestion(1)" style="width: auto;">
+                        Next Question <i class="fas fa-arrow-right"></i>
+                    </button>
 
-</form>
-<script>
-    // Force reload on back button to trigger server redirects
-    window.onpageshow = function(event) {
-        if (event.persisted) {
-            window.location.reload();
+                    <button type="submit" class="btn" id="submitBtn" style="width: auto; display: none; background-color: #2ecc71;">
+                        Submit Quiz <i class="fas fa-check"></i>
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = {{ questions|length }};
+        
+        function updateProgress() {
+            // Update Bar Width
+            const percentage = ((currentStep) / totalSteps) * 100;
+            document.getElementById('progress-bar').style.width = percentage + '%';
+            
+            // Update Text (e.g., "5 / 15")
+            document.getElementById('question-tracker').innerText = currentStep + " / " + totalSteps;
         }
-    };
-</script>
 
+        function changeQuestion(direction) {
+            // Validation: Prevent going Next if no option selected
+            if (direction === 1) {
+                const currentInputs = document.querySelectorAll(`.question-step[data-index="${currentStep}"] input[type="radio"]`);
+                let answered = false;
+                currentInputs.forEach(input => { if(input.checked) answered = true; });
+                
+                if (!answered) {
+                    alert("Please select an answer before moving forward.");
+                    return;
+                }
+            }
+
+            // Hide Current
+            document.querySelector(`.question-step[data-index="${currentStep}"]`).classList.remove('active');
+            
+            // Update Index
+            currentStep += direction;
+            
+            // Show New
+            document.querySelector(`.question-step[data-index="${currentStep}"]`).classList.add('active');
+
+            // Handle Buttons
+            document.getElementById('prevBtn').style.visibility = (currentStep === 1) ? 'hidden' : 'visible';
+            
+            if (currentStep === totalSteps) {
+                document.getElementById('nextBtn').style.display = 'none';
+                document.getElementById('submitBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('nextBtn').style.display = 'inline-block';
+                document.getElementById('submitBtn').style.display = 'none';
+            }
+
+            updateProgress();
+        }
+
+        // Initialize Progress Bar
+        updateProgress();
+
+        // Prevent Back Button
+        window.onpageshow = function(event) {
+            if (event.persisted) window.location.reload();
+        };
+    </script>
 </body>
 </html>

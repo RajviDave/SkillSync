@@ -20,6 +20,11 @@ $response = file_get_contents($url, false, $context);
 
 $questions = json_decode($response, true);   // <<< use this
 
+echo "<pre>";
+print_r($questions);
+echo "</pre>";
+die();
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -29,26 +34,26 @@ $questions = json_decode($response, true);   // <<< use this
 
 <?php foreach ($questions as $q): ?>
 
-    <p><b><?php echo $q['quistion']; ?></b></p>
+    <p><b><?php echo $q['question']; ?></b></p>
 
     <label>
         <input type="radio" name="answers[<?php echo $q['id']; ?>]" value="A">
-        <?php echo $q['optionA']; ?>
+        <?php echo $q['option_a']; ?>
     </label><br>
 
     <label>
         <input type="radio" name="answers[<?php echo $q['id']; ?>]" value="B">
-        <?php echo $q['optionB']; ?>
+        <?php echo $q['option_b']; ?>
     </label><br>
 
     <label>
         <input type="radio" name="answers[<?php echo $q['id']; ?>]" value="C">
-        <?php echo $q['optionC']; ?>
+        <?php echo $q['option_c']; ?>
     </label><br>
 
     <label>
         <input type="radio" name="answers[<?php echo $q['id']; ?>]" value="D">
-        <?php echo $q['optionD']; ?>
+        <?php echo $q['option_d']; ?>
     </label><br><br>
 
 <?php endforeach; ?>
