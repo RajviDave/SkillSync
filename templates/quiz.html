@@ -209,6 +209,21 @@
         }
     }
 
+        function forceSubmit() {
+        // 1. Stop the countdown immediately
+        if (typeof timerInterval !== 'undefined') {
+            clearInterval(timerInterval);
+        }
+        
+        // 2. Submit the form by its ID
+        const quizForm = document.getElementById("quizForm");
+        if (quizForm) {
+            quizForm.submit();
+        } else {
+            alert("Error: Quiz form not found!");
+        }
+    }
+
     // FINAL SUBMIT FIX: Handle the form submission properly
     quizForm.onsubmit = function(e) {
         // Ensure disabled inputs are re-enabled so their data is sent to Flask

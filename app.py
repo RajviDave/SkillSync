@@ -99,7 +99,7 @@ def signup():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    print(f"DEBUG: Input: {password} | DB: {user['password']}")
+    
     # NEW: If already logged in, redirect to dashboard immediately
     if 'user_id' in session:
         if session.get('role') == 'mentor':
