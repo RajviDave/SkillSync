@@ -35,8 +35,33 @@ def home():
     if session.get('role') == 'mentor':
         return redirect("/mentor/dashboard")
     
+    stage = session.get('assessment_stage')
+    if stage == 'quiz':
+        return redirect("/quiz")
+    elif stage == 'result':
+        return redirect("/result")
+    
     # If Student, go to Input Form
     return render_template("input_form.html", user_name=session.get('user_name'))
+
+@app.route("/result")
+def result_page():
+    # Security: If they haven't finished the quiz, kick them out
+    if session.get('assessment_stage') != 'result':
+        return redirect("/")
+    
+    results = session.get('final_results', {})
+    
+    return render_template("result.html", **results)
+
+@app.route("/reset")
+def reset_assessment():
+    # Clear session keys related to the assessment
+    keys = ['assessment_stage', 'final_results', 'quiz_languages', 'resume_score_numeric', 'mentor_score']
+    for key in keys:
+        session.pop(key, None)
+    return redirect("/")
+
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -190,11 +215,16 @@ def analyze():
         github_results = list(fallback_set)
 
     session["quiz_languages"] = github_results
+    session['assessment_stage'] = 'quiz'
 
     return redirect("/quiz")
 
 @app.route("/quiz")
 def quiz_page():
+
+    if session.get('assessment_stage') == 'result':
+        return redirect("/result")
+    
     languages = session.get("quiz_languages", [])
     if not languages: return "No quiz generated."
     
@@ -228,6 +258,8 @@ def submit_quiz():
         row = cur.fetchone()
         if row and row['correct_option'] == user_ans:
             score += 1
+    cur.close()
+    conn.close()
 
     # --- FINAL CALCULATION ---
     quiz_percentage = (score / total * 100) if total > 0 else 0
@@ -240,7 +272,8 @@ def submit_quiz():
     # --- SAVE TO DATABASE ---
     student_id = session.get('user_id')
     current_domain = session.get('current_domain', 'Unknown')
-
+    conn = get_db_connection()
+    cur = conn.cursor()
     cur.execute("""
         INSERT INTO assessment_results 
         (student_id, job_domain, resume_score, quiz_score, mentor_score, final_score)
@@ -250,6 +283,17 @@ def submit_quiz():
     conn.commit()
     cur.close()
     conn.close()
+
+    session['final_results'] = {
+        'score': score,
+        'total': total,
+        'resume_score': resume_score,
+        'quiz_percentage': quiz_percentage,
+        'mentor_score': mentor_score,
+        'final_score': final_score
+    }
+    session['assessment_stage'] = 'result'
+    
 
     return render_template("result.html", 
                            final_score=final_score, 

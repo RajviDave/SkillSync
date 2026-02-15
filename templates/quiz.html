@@ -36,6 +36,14 @@
 <button type="submit">Submit Quiz</button>
 
 </form>
+<script>
+    // Force reload on back button to trigger server redirects
+    window.onpageshow = function(event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    };
+</script>
 
 </body>
 </html>
