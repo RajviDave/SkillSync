@@ -194,5 +194,8 @@ def result_page():
 
 if __name__ == "__main__":
     with app.app_context():
-        db.create_all() # Automatically creates the .db file if it doesn't exist
-    app.run(debug=True)
+        db.create_all()
+    
+    # This line tells Flask to use Render's port
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
