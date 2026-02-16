@@ -1,3 +1,9 @@
 flask
 flask-sqlalchemy
 gunicorn
+pdfplumber
+nltk
+requests
+python-dotenv
+numpy
+sentence-transformers
