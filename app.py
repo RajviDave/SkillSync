@@ -11,18 +11,53 @@ from comments import comments
 from git import git
 from domain_match import match_domain
 from languages import domain_to_languages
+from flask_sqlalchemy import SQLAlchemy
+import os
 
 app = Flask(__name__)
 app.secret_key = "skillsync_secret"
 
 # --- DATABASE CONNECTION ---
-def get_db_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="auth_system"
-    )
+# def get_db_connection():
+#     return mysql.connector.connect(
+#         host="localhost",
+#         user="root",
+#         password="",
+#         database="auth_system"
+#     )
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///skillsync.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(20), nullable=False)
+
+class Quiz(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    language = db.Column(db.String(50))
+    difficulty = db.Column(db.String(50))
+    question = db.Column(db.String(500), nullable=False)
+    optionA = db.Column(db.String(200))
+    optionB = db.Column(db.String(200))
+    optionC = db.Column(db.String(200))
+    optionD = db.Column(db.String(200))
+    correct_option = db.Column(db.String(1))
+
+class AssessmentResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    job_domain = db.Column(db.String(100))
+    resume_score = db.Column(db.Float)
+    quiz_score = db.Column(db.Float)
+    final_score = db.Column(db.Float)
+    status = db.Column(db.String(50))
+    date_taken = db.Column(db.DateTime, default=db.func.current_timestamp())
 
 # --- ROUTES: AUTHENTICATION ---
 

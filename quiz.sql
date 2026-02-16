@@ -1,5 +1,5 @@
 INSERT INTO quiz
-(language, difficulty, quistion,
+(language, difficulty, question,
  optionA, optionB, optionC, optionD, correct_option)
 VALUES
 ('r','easy',

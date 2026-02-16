@@ -83,13 +83,13 @@ domain_keywords = {
 
     "frontend_web": [
     "frontend","web ui","ui developer","spa","responsive design",
-    "web interface","user interface","client side","ui ux"
+    "web interface","user interface","client side","ui ux", "html","css", "Javascript","react"
     ],
 
     "backend_web": [
     "backend","server side","api development","rest api",
     "microservices","authentication","authorization",
-    "scalable systems","backend engineer","distributed systems"
+    "scalable systems","backend engineer","distributed systems","node.js",
     ],
 
     "fullstack_web": [
