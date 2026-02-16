@@ -1,9 +1,9 @@
 from flask import Flask, redirect, request, jsonify, render_template, session, url_for
 import os
 from werkzeug.utils import secure_filename
-import mysql.connector
 import random
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_sqlalchemy import SQLAlchemy
 
 # Import your custom modules
 from resume import resume
@@ -11,26 +11,16 @@ from comments import comments
 from git import git
 from domain_match import match_domain
 from languages import domain_to_languages
-from flask_sqlalchemy import SQLAlchemy
-import os
 
 app = Flask(__name__)
 app.secret_key = "skillsync_secret"
 
-# --- DATABASE CONNECTION ---
-# def get_db_connection():
-#     return mysql.connector.connect(
-#         host="localhost",
-#         user="root",
-#         password="",
-#         database="auth_system"
-#     )
-
+# --- DATABASE CONFIGURATION ---
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///skillsync.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db = SQLAlchemy(app)
 
+# --- MODELS ---
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -51,320 +41,158 @@ class Quiz(db.Model):
 
 class AssessmentResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    student_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     job_domain = db.Column(db.String(100))
     resume_score = db.Column(db.Float)
     quiz_score = db.Column(db.Float)
+    mentor_score = db.Column(db.Float)
     final_score = db.Column(db.Float)
-    status = db.Column(db.String(50))
-    date_taken = db.Column(db.DateTime, default=db.func.current_timestamp())
+    date_added = db.Column(db.DateTime, default=db.func.current_timestamp())
 
 # --- ROUTES: AUTHENTICATION ---
 
 @app.route("/")
 def home():
-    # If not logged in, go to login
     if 'user_id' not in session:
-        return redirect("/login")
-    
-    # If Mentor, go to Dashboard
+        return redirect(url_for("login"))
     if session.get('role') == 'mentor':
-        return redirect("/mentor_dashboard")
+        return redirect(url_for("mentor_dashboard"))
     
     stage = session.get('assessment_stage')
-    if stage == 'quiz':
-        return redirect("/quiz")
-    elif stage == 'result':
-        return redirect("/result")
+    if stage == 'quiz': return redirect(url_for("quiz_page"))
+    elif stage == 'result': return redirect(url_for("result_page"))
     
-    # If Student, go to Input Form
     return render_template("input_form.html", user_name=session.get('user_name'))
-
-@app.route("/result")
-def result_page():
-    # Security: If they haven't finished the quiz, kick them out
-    if session.get('assessment_stage') != 'result':
-        return redirect("/")
-    
-    results = session.get('final_results', {})
-    
-    return render_template("result.html", **results)
-
-@app.route("/reset")
-def reset_assessment():
-    # Clear session keys related to the assessment
-    keys = ['assessment_stage', 'final_results', 'quiz_languages', 'resume_score_numeric', 'mentor_score']
-    for key in keys:
-        session.pop(key, None)
-    return redirect("/")
-
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
-
-    # NEW: If already logged in, redirect to dashboard immediately
-    if 'user_id' in session:
-        return redirect("/")
-    
+    if 'user_id' in session: return redirect("/")
     if request.method == "POST":
-        name = request.form['name']
-        email = request.form['email']
-        password = request.form['password']
-        role = request.form['role'] # 'student' or 'mentor'
-
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-
-        conn = get_db_connection()
-        cur = conn.cursor()
+        hashed_pw = generate_password_hash(request.form['password'], method='pbkdf2:sha256')
+        new_user = User(
+            name=request.form['name'],
+            email=request.form['email'],
+            password=hashed_pw,
+            role=request.form['role']
+        )
         try:
-            
-            cur.execute("INSERT INTO users (name, email, password, role) VALUES (%s, %s, %s, %s)", 
-            (name, email, hashed_password, role))
-            conn.commit()
-            return redirect("/login")
+            db.session.add(new_user)
+            db.session.commit()
+            return redirect(url_for("login"))
         except Exception as e:
+            db.session.rollback()
             return f"Error: {e}"
-        finally:
-            cur.close()
-            conn.close()
-
-        return redirect("/login")
-
     return render_template("signup.html")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    
-    # NEW: If already logged in, redirect to dashboard immediately
-    if 'user_id' in session:
-        if session.get('role') == 'mentor':
-            return redirect("/mentor_dashboard")
-        else:
-            return redirect("/")
-        
+    if 'user_id' in session: return redirect("/")
     if request.method == "POST":
         email = request.form['email']
         password = request.form['password']
-
-        conn = get_db_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("SELECT * FROM users WHERE email=%s", (email,))
-        user = cur.fetchone()
-        cur.close()
-        conn.close()
-
-        if user and check_password_hash(user['password'], password):
-            session['user_id'] = user['id']
-            session['user_name'] = user['name']
-            session['role'] = user['role']
-            
-            if user['role'] == 'mentor':
-                return redirect("/mentor_dashboard")
-            else:
-                return redirect("/")
-        else:
-            return "Invalid Credentials"
-        
+        user = User.query.filter_by(email=email).first()
+        if user and check_password_hash(user.password, password):
+            session.update({'user_id': user.id, 'user_name': user.name, 'role': user.role})
+            return redirect(url_for("mentor_dashboard") if user.role == 'mentor' else "/")
+        return "Invalid Credentials"
     return render_template("login.html")
 
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect("/login")
+    return redirect(url_for("login"))
 
 # --- ROUTES: MENTOR DASHBOARD ---
 
 @app.route("/mentor_dashboard")
 def mentor_dashboard():
-    # 1. Security Check First
-    if session.get('role') != 'mentor':
-        return "Access Denied: Mentors Only", 403
-
-    # 2. Get the search term from the URL (e.g., /mentor_dashboard?search=Taanu)
+    if session.get('role') != 'mentor': return "Access Denied", 403
     search_query = request.args.get('search', '').strip()
-
-    conn = get_db_connection()
-    cur = conn.cursor(dictionary=True)
     
-    # 3. Base Query with JOIN
-    query = """
-        SELECT users.name, ar.job_domain, ar.resume_score, ar.quiz_score, 
-               ar.mentor_score, ar.final_score, ar.date_added
-        FROM assessment_results ar
-        JOIN users ON ar.student_id = users.id
-    """
-    
-    # 4. Add Search Logic if a query exists
+    query = db.session.query(User.name, AssessmentResult).join(AssessmentResult, User.id == AssessmentResult.student_id)
     if search_query:
-        query += " WHERE users.name LIKE %s"
-        # The % are wildcards for partial matching
-        search_param = f"%{search_query}%"
-        query += " ORDER BY ar.date_added DESC"
-        cur.execute(query, (search_param,))
-    else:
-        query += " ORDER BY ar.date_added DESC"
-        cur.execute(query)
+        query = query.filter(User.name.contains(search_query))
     
-    results = cur.fetchall()
-    
-    cur.close()
-    conn.close()
-
-    # 5. Pass results AND search_query back to the page (to keep the text in the search bar)
+    results = query.order_by(AssessmentResult.date_added.desc()).all()
     return render_template("mentor_dashboard.html", students=results, last_search=search_query)
 
-# --- ROUTES: STUDENT ASSESSMENT FLOW ---
+# --- ROUTES: STUDENT ASSESSMENT ---
 
-# FIX: Renamed back to "/analyze" to match your HTML form action
 @app.route("/analyze", methods=["POST"])
 def analyze():
-    if session.get('role') != 'student':
-        return "Access Denied"
-
-    job_description = request.form.get("jd")
+    if session.get('role') != 'student': return "Access Denied"
+    
+    # Simple File Save
     resume_file = request.files.get("resume")
-    mentor_comments = request.form.get("comments")
-    github_username = request.form.get("git")
-
     UPLOAD_FOLDER = "uploads"
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    filename = secure_filename(resume_file.filename)
-    resume_path = os.path.join(UPLOAD_FOLDER, filename)
+    resume_path = os.path.join(UPLOAD_FOLDER, secure_filename(resume_file.filename))
     resume_file.save(resume_path)
 
-    # 1. Identify Domain
-    jd_domains = match_domain(job_description)
-    # Convert dict keys to string for storage/display (e.g., "Web Development")
+    # Logic
+    jd_domains = match_domain(request.form.get("jd"))
     domain_name = list(jd_domains.keys())[0] if jd_domains else "General"
-    session['current_domain'] = domain_name
-
-    # 2. Analyze Resume
     resume_results = resume(resume_path, jd_domains)
     
-    # Calculate Numeric Resume Score
-    total_r = 0
-    count_r = 0
-    for d, s in resume_results.items():
-        try:
-            total_r += int(s.split('/')[0])
-            count_r += 1
-        except: continue
-    avg_resume_score = total_r / count_r if count_r > 0 else 0
-    session['resume_score_numeric'] = avg_resume_score
-
-    # 3. Analyze Comments (Sentiment)
-    mentor_score = comments(mentor_comments)
-    session['mentor_score'] = mentor_score
-
-    # 4. GitHub & Quiz Setup (Fallback Logic)
-    github_results = git(github_username, jd_domains)
-    if not github_results:
-        fallback_set = set()
-        iterable = jd_domains.keys() if isinstance(jd_domains, dict) else jd_domains
-        for domain in iterable:
-            if domain in domain_to_languages:
-                for lang in domain_to_languages[domain]:
-                    fallback_set.add(lang)
-        github_results = list(fallback_set)
-
-    session["quiz_languages"] = github_results
-    session['assessment_stage'] = 'quiz'
-
-    return redirect("/quiz")
+    # Score Calc
+    total_r = sum(int(s.split('/')[0]) for s in resume_results.values() if '/' in s)
+    avg_resume = total_r / len(resume_results) if resume_results else 0
+    
+    session.update({
+        'current_domain': domain_name,
+        'resume_score_numeric': avg_resume,
+        'mentor_score': comments(request.form.get("comments")),
+        'quiz_languages': git(request.form.get("git"), jd_domains) or ["Python"],
+        'assessment_stage': 'quiz'
+    })
+    return redirect(url_for("quiz_page"))
 
 @app.route("/quiz")
 def quiz_page():
-
-    if session.get('assessment_stage') == 'result':
-        return redirect("/result")
-    
-    languages = session.get("quiz_languages", [])
-    if not languages: return "No quiz generated."
-    
-    conn = get_db_connection()
-    cur = conn.cursor(dictionary=True)
-    
-    # Dynamically handle multiple languages
-    placeholders = ",".join(["%s"] * len(languages))
-    query = f"SELECT * FROM quiz WHERE language IN ({placeholders}) ORDER BY RAND() LIMIT 15"
-    
-    # Pass languages tuple to execute
-    cur.execute(query, tuple(languages))
-    questions = cur.fetchall()
-    cur.close()
-    conn.close()
-    
+    if session.get('assessment_stage') == 'result': return redirect(url_for("result_page"))
+    langs = session.get("quiz_languages", ["Python"])
+    # Randomly select 15 questions for the languages
+    questions = Quiz.query.filter(Quiz.language.in_(langs)).order_by(db.func.random()).limit(15).all()
     return render_template("quiz.html", questions=questions)
 
 @app.route("/quiz/submit", methods=["POST"])
 def submit_quiz():
     answers = request.form.to_dict()
-    clean = {int(k.replace("answers[", "").replace("]", "")): v for k, v in answers.items()}
-
     score = 0
-    total = len(clean)
-    conn = get_db_connection()
-    cur = conn.cursor(dictionary=True)
-    
-    for qid, user_ans in clean.items():
-        cur.execute("SELECT correct_option FROM quiz WHERE id=%s", (qid,))
-        row = cur.fetchone()
-        if row and row['correct_option'] == user_ans:
-            score += 1
-    cur.close()
-    conn.close()
+    total = 0
+    for k, user_ans in answers.items():
+        qid = int(k.replace("answers[", "").replace("]", ""))
+        q = Quiz.query.get(qid)
+        if q and q.correct_option == user_ans: score += 1
+        total += 1
 
-    # --- FINAL CALCULATION ---
-    quiz_percentage = (score / total * 100) if total > 0 else 0
-    resume_score = session.get('resume_score_numeric', 0)
-    mentor_score = session.get('mentor_score', 50)
-    
-    final_score = (resume_score * 0.30) + (quiz_percentage * 0.50) + (mentor_score * 0.20)
-    final_score = round(final_score, 2)
+    quiz_pct = (score / total * 100) if total > 0 else 0
+    res_score = session.get('resume_score_numeric', 0)
+    men_score = session.get('mentor_score', 50)
+    final = round((res_score * 0.3) + (quiz_pct * 0.5) + (men_score * 0.2), 2)
 
-    # --- SAVE TO DATABASE ---
-    student_id = session.get('user_id')
-    current_domain = session.get('current_domain', 'Unknown')
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO assessment_results 
-        (student_id, job_domain, resume_score, quiz_score, mentor_score, final_score)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """, (student_id, current_domain, resume_score, quiz_percentage, mentor_score, final_score))
-    
-    conn.commit()
-    cur.close()
-    conn.close()
+    # Save to SQLite
+    res = AssessmentResult(
+        student_id=session.get('user_id'),
+        job_domain=session.get('current_domain'),
+        resume_score=res_score,
+        quiz_score=quiz_pct,
+        mentor_score=men_score,
+        final_score=final
+    )
+    db.session.add(res)
+    db.session.commit()
 
-    session['final_results'] = {
-        'score': score,
-        'total': total,
-        'resume_score': resume_score,
-        'quiz_percentage': quiz_percentage,
-        'mentor_score': mentor_score,
-        'final_score': final_score
-    }
+    session['final_results'] = {'score': score, 'total': total, 'final_score': final}
     session['assessment_stage'] = 'result'
-    
+    return redirect(url_for("result_page"))
 
-    return render_template("result.html", 
-                           final_score=final_score, 
-                           resume_score=resume_score,
-                           quiz_percentage=quiz_percentage,
-                           mentor_score=mentor_score,
-                           score=score, total=total)
-
-@app.after_request
-def add_header(response):
-    """
-    Add headers to both force latest content in the browser
-    and to prevent the browser from caching the rendered page.
-    """
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, public, max-age=0"
-    response.headers["Pragma"] = "no-cache"
-    response.headers["Expires"] = "0"
-    return response
+@app.route("/result")
+def result_page():
+    if session.get('assessment_stage') != 'result': return redirect("/")
+    return render_template("result.html", **session.get('final_results'))
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all() # Automatically creates the .db file if it doesn't exist
     app.run(debug=True)
