@@ -5,7 +5,6 @@ import json
 from dotenv import load_dotenv
 import numpy as np
 from numpy.linalg import norm
-from sentence_transformers import SentenceTransformer
 from languages import domain_to_languages
 from domain import *
 from domain_match import *
